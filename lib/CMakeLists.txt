@@ -5,7 +5,7 @@ project(grapher-lib VERSION 0.0.0 LANGUAGES C CXX)
 find_package(Qt6 COMPONENTS Core Gui Widgets REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
-    src/tmp.cpp
+        src/tmp.cpp
         )
 
 target_include_directories(${PROJECT_NAME}

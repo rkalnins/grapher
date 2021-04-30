@@ -6,6 +6,9 @@ find_package(Qt6 COMPONENTS Core Gui Widgets REQUIRED)
 
 add_executable(${PROJECT_NAME}
         src/main.cpp
+        src/main_window.cpp
+
+        ../external/qcustomplot/qcustomplot.h
         )
 
 target_include_directories(${PROJECT_NAME}
@@ -19,6 +22,7 @@ target_link_libraries(${PROJECT_NAME}
         Qt6::Gui
         Qt6::Widgets
         grapher-lib
+        qcustomplot-lib
         )
 
 target_compile_features(${PROJECT_NAME}
@@ -30,5 +34,6 @@ set_target_properties(${PROJECT_NAME}
         PROPERTIES
         AUTOMOC ON
         AUTORCC ON
+        AUTOUIC ON
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
         )
