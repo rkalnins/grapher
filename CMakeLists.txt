@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.19)
 cmake_policy(SET CMP0048 NEW)
-project(grapher VERSION 0.0.0 LANGUAGES C CXX)
+project(grapher VERSION 0.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
 add_subdirectory(lib)
 add_subdirectory(ui-widgets)
 add_subdirectory(external/qcustomplot)
-
+add_subdirectory(external/pugixml-1.11)

@@ -1,11 +1,29 @@
 cmake_minimum_required(VERSION 3.19)
 cmake_policy(SET CMP0048 NEW)
-project(grapher-lib VERSION 0.0.0 LANGUAGES C CXX)
+project(grapher-lib VERSION 0.0.0 LANGUAGES CXX)
 
 find_package(Qt6 COMPONENTS Core Gui Widgets REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
-        src/tmp.cpp
+
+
+        src/controllers/main_controller.cpp
+        src/controllers/menu_controller.cpp
+
+        src/models/menu_model.cpp
+
+
+        ../external/qcustomplot/qcustomplot.cpp
+        ../external/pugixml-1.11/src/pugixml.cpp
+
+        # public
+        public/controllers/main_controller.h
+        public/controllers/menu_controller.h
+        public/models/menu_model.h
+
+        public/globals.h
+
+
         )
 
 target_include_directories(${PROJECT_NAME}
@@ -36,8 +54,18 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         Qt6::Core
         Qt6::Gui
         Qt6::Widgets
+        pugixml
+        qcustomplot-lib
         )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+
+set_target_properties(${PROJECT_NAME}
+        PROPERTIES
+        AUTOMOC ON
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+        )
 
 add_subdirectory(tests)
