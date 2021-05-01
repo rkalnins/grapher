@@ -14,7 +14,7 @@ namespace grapher::models {
 
         Q_DISABLE_COPY_MOVE(MenuModel)
 
-        Q_PROPERTY(QString title READ title NOTIFY titleChanged)
+        Q_PROPERTY(QString title READ getTitle NOTIFY titleChanged)
         Q_PROPERTY(bool isNewWorkspace READ isNewWorkspace NOTIFY isNewWorkspaceChanged)
 
     public:
@@ -23,7 +23,7 @@ namespace grapher::models {
 
         virtual ~MenuModel() = default;
 
-        QString title() const;
+        QString getTitle() const;
 
         bool isNewWorkspace() const;
 

@@ -19,7 +19,7 @@ namespace grapher::controllers {
                 &MainController::handleOpenWorkspaceClicked);
     }
 
-    MenuController *MainController::menuController() {
+    MenuController *MainController::getMenuController() {
         return &menu_controller_;
     }
 
@@ -31,12 +31,12 @@ namespace grapher::controllers {
         qDebug() << "Save workspace clicked";
     }
 
-    void MainController::handleSaveWorkspaceAsClicked() {
-        qDebug() << "Save workspace as clicked";
+    void MainController::handleSaveWorkspaceAsClicked(const QUrl &url) {
+        qDebug() << "Save workspace as clicked" << url.toString();
     }
 
-    void MainController::handleOpenWorkspaceClicked() {
-        qDebug() << "Open workspace clicked";
+    void MainController::handleOpenWorkspaceClicked(const QUrl &url) {
+        qDebug() << "Open workspace clicked " << url.toString();
     }
 
 }

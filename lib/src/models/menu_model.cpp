@@ -9,7 +9,7 @@ namespace grapher::models {
 
     MenuModel::MenuModel(QObject *parent) : QObject{parent} {}
 
-    QString MenuModel::title() const {
+    QString MenuModel::getTitle() const {
         return QString("test-title");
     }
 

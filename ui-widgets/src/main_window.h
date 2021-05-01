@@ -7,7 +7,7 @@
 
 #include <QMainWindow>
 #include <QSessionManager>
-#include <QPlainTextEdit>
+#include <QFileDialog>
 
 #include "qcustomplot.h"
 
@@ -35,19 +35,27 @@ private:
 
     void createMenus();
 
+    void openWorkspace();
+
+    void saveWorkspaceAs();
+
+    void saveWorkspace();
+
+    void newWorkspace();
+
 private slots:
 
     void realtimeDataSlot();
 
 private:
-    QMenu *menu{nullptr};
-    QMenu *edit{nullptr};
-    QMenu *help{nullptr};
+    QMenu *menu_{nullptr};
+    QMenu *edit_{nullptr};
+    QMenu *help_{nullptr};
 
-    QAction *newws_action{nullptr};
-    QAction *openws_action{nullptr};
-    QAction *savews_action{nullptr};
-    QAction *savewsas_action{nullptr};
+    QAction *newws_action_{nullptr};
+    QAction *openws_action_{nullptr};
+    QAction *savews_action_{nullptr};
+    QAction *savewsas_action_{nullptr};
 
 
 private:

@@ -34,32 +34,67 @@ MainWindow::~MainWindow() noexcept {
 
 
 void MainWindow::createMenus() {
-    menu = menuBar()->addMenu(tr("&File"));
-    menu->addAction(newws_action);
-    menu->addAction(savews_action);
-    menu->addAction(savewsas_action);
+    menu_ = menuBar()->addMenu(tr("&File"));
+    menu_->addAction(newws_action_);
+    menu_->addAction(openws_action_);
+    menu_->addAction(savews_action_);
+    menu_->addAction(savewsas_action_);
 
-    menuBar()->addAction(menu->menuAction());
+    menuBar()->addAction(menu_->menuAction());
     menuBar()->setNativeMenuBar(false);
 }
 
 void MainWindow::createActions() {
 
-    newws_action = new QAction(tr("&New workspace..."), this);
-    connect(newws_action, &QAction::triggered, main_controller_->menuController(),
-            &MenuController::newWorkspaceClicked);
+    newws_action_ = new QAction(tr("&New workspace..."), this);
+    connect(newws_action_, &QAction::triggered, this,
+            &MainWindow::newWorkspace);
 
-    openws_action = new QAction(tr("&Open workspace..."), this);
-    connect(openws_action, &QAction::triggered, main_controller_->menuController(),
-            &MenuController::openWorkspaceClicked);
+    openws_action_ = new QAction(tr("&Open workspace..."), this);
+    connect(openws_action_, &QAction::triggered, this, &MainWindow::openWorkspace);
 
-    savews_action = new QAction(tr("&Save workspace"), this);
-    connect(savews_action, &QAction::triggered, main_controller_->menuController(),
-            &MenuController::saveWorkspaceClicked);
+    savews_action_ = new QAction(tr("&Save workspace"), this);
+    connect(savews_action_, &QAction::triggered, this,
+            &MainWindow::saveWorkspace);
 
-    savewsas_action = new QAction(tr("&Save workspace as..."), this);
-    connect(savewsas_action, &QAction::triggered, main_controller_->menuController(),
-            &MenuController::saveWorkspaceAsClicked);
+    savewsas_action_ = new QAction(tr("&Save workspace as..."), this);
+    connect(savewsas_action_, &QAction::triggered, this,
+            &MainWindow::saveWorkspaceAs);
+}
+
+
+void MainWindow::openWorkspace() {
+    QFileDialog dialog(this);
+    dialog.setAcceptMode(QFileDialog::AcceptOpen);
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    dialog.setViewMode(QFileDialog::Detail);
+
+
+    if (dialog.exec()) {
+        auto filenames = dialog.selectedUrls();
+        if (!filenames.empty()) {
+            emit main_controller_->getMenuController()->openWorkspaceClicked(filenames[0]);
+        }
+    }
+}
+
+void MainWindow::newWorkspace() {
+    emit main_controller_->getMenuController()->newWorkspaceClicked();
+}
+
+void MainWindow::saveWorkspace() {
+    emit main_controller_->getMenuController()->saveWorkspaceClicked();
+}
+
+void MainWindow::saveWorkspaceAs() {
+    QFileDialog dialog(this);
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setViewMode(QFileDialog::Detail);
+
+    auto filename = QFileDialog::getSaveFileUrl();
+    if (!filename.isEmpty()) {
+        emit main_controller_->getMenuController()->saveWorkspaceAsClicked(filename);
+    }
 }
 
 void MainWindow::setupPlot(QCustomPlot *plot) {

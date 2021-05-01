@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
     MainController main_controller;
 
     MenuModel menu_model;
-    main_controller.menuController()->setModel(menu_model);
+    main_controller.getMenuController()->setModel(menu_model);
 
 
     MainWindow window(main_controller);

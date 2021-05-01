@@ -11,6 +11,7 @@ add_library(${PROJECT_NAME} SHARED
         src/controllers/menu_controller.cpp
 
         src/models/menu_model.cpp
+        src/models/workspace_model.cpp
 
 
         ../external/qcustomplot/qcustomplot.cpp
@@ -20,11 +21,12 @@ add_library(${PROJECT_NAME} SHARED
         public/controllers/main_controller.h
         public/controllers/menu_controller.h
         public/models/menu_model.h
+        public/models/workspace_model.h
 
         public/globals.h
 
 
-        )
+        public/file_handler.h src/file_handler.cpp)
 
 target_include_directories(${PROJECT_NAME}
         PUBLIC

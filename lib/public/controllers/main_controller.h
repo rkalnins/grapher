@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QString>
 #include <QDebug>
+#include <QUrl>
 
 #include "menu_controller.h"
 
@@ -19,12 +20,12 @@ namespace grapher::controllers {
 
         Q_DISABLE_COPY_MOVE(MainController)
 
-        Q_PROPERTY(controllers::MenuController * menuController READ menuController CONSTANT);
+        Q_PROPERTY(controllers::MenuController * menuController READ getMenuController CONSTANT);
 
     public:
         explicit MainController(QObject *parent = nullptr);
 
-        MenuController *menuController();
+        MenuController *getMenuController();
 
         virtual ~MainController() = default;
 
@@ -37,9 +38,9 @@ namespace grapher::controllers {
 
         void handleSaveWorkspaceClicked();
 
-        void handleSaveWorkspaceAsClicked();
+        void handleSaveWorkspaceAsClicked(const QUrl &url);
 
-        void handleOpenWorkspaceClicked();
+        void handleOpenWorkspaceClicked(const QUrl &url);
 
     };
 }

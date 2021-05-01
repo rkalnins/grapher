@@ -34,9 +34,9 @@ namespace grapher {
 
             void saveWorkspaceClicked();
 
-            void saveWorkspaceAsClicked();
+            void saveWorkspaceAsClicked(const QUrl &url);
 
-            void openWorkspaceClicked();
+            void openWorkspaceClicked(const QUrl &url);
 
         private:
             models::MenuModel *menu_model_{nullptr};
