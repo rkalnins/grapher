@@ -5,6 +5,7 @@
 #pragma once
 
 #include <QObject>
+#include <QDebug>
 
 #include "globals.h"
 
@@ -14,12 +15,14 @@ namespace grapher {
         class MenuModel;
     }
 
+    class WorkspaceHandler;
+
     namespace controllers {
 
         class GRAPHER_EXPORT MenuController : public QObject {
         Q_OBJECT
 
-            Q_DISABLE_COPY_MOVE(MenuController);
+            Q_DISABLE_COPY_MOVE(MenuController)
 
         public:
             explicit MenuController(QObject *parent = nullptr);
@@ -27,6 +30,8 @@ namespace grapher {
             virtual ~MenuController() = default;
 
             void setModel(models::MenuModel &model);
+
+            void setWorkspace(WorkspaceHandler &handler);
 
         Q_SIGNALS:
 

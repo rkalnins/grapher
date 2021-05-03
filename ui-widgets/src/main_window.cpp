@@ -8,7 +8,8 @@
 #include "ui_mainwindow.h"
 
 #include "main_controller.h"
-#include "menu_controller.h"
+
+#include "menu_model.h"
 
 
 MainWindow::MainWindow(MainController &main_controller, QWidget *parent) : QMainWindow(parent),
@@ -19,13 +20,14 @@ MainWindow::MainWindow(MainController &main_controller, QWidget *parent) : QMain
 
     setupPlot(ui_->customPlot);
 
-    setWindowTitle(window_title_);
     statusBar()->clearMessage();
 
     createActions();
     createMenus();
 
     ui_->customPlot->replot();
+
+    connect(main_controller_, &MainController::titleChanged, this, &MainWindow::updateTitle);
 }
 
 MainWindow::~MainWindow() noexcept {
@@ -62,6 +64,10 @@ void MainWindow::createActions() {
             &MainWindow::saveWorkspaceAs);
 }
 
+void MainWindow::updateTitle(const QString &title) {
+    setWindowTitle(title);
+    qDebug() << "title changed to " << title;
+}
 
 void MainWindow::openWorkspace() {
     QFileDialog dialog(this);

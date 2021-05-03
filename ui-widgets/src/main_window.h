@@ -8,6 +8,7 @@
 #include <QMainWindow>
 #include <QSessionManager>
 #include <QFileDialog>
+#include <QString>
 
 #include "qcustomplot.h"
 
@@ -47,6 +48,8 @@ private slots:
 
     void realtimeDataSlot();
 
+    void updateTitle(const QString &title);
+
 private:
     QMenu *menu_{nullptr};
     QMenu *edit_{nullptr};
@@ -57,15 +60,12 @@ private:
     QAction *savews_action_{nullptr};
     QAction *savewsas_action_{nullptr};
 
-
 private:
 
     Ui::MainWindow *ui_;
 
     MainController *main_controller_;
 
-
-    QString window_title_;
     QTimer data_timer_;
 
 };

@@ -6,13 +6,14 @@ find_package(Qt6 COMPONENTS Core Gui Widgets REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
 
+        src/file_handler.cpp
+        src/workspace_handler.cpp
 
         src/controllers/main_controller.cpp
         src/controllers/menu_controller.cpp
 
         src/models/menu_model.cpp
         src/models/workspace_model.cpp
-
 
         ../external/qcustomplot/qcustomplot.cpp
         ../external/pugixml-1.11/src/pugixml.cpp
@@ -23,10 +24,11 @@ add_library(${PROJECT_NAME} SHARED
         public/models/menu_model.h
         public/models/workspace_model.h
 
+        public/workspace_handler.h
+        public/file_handler.h
         public/globals.h
 
-
-        public/file_handler.h src/file_handler.cpp)
+        public/controllers/workspace_controller.h src/controllers/workspace_controller.cpp)
 
 target_include_directories(${PROJECT_NAME}
         PUBLIC
@@ -58,6 +60,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         Qt6::Widgets
         pugixml
         qcustomplot-lib
+        qjsonmodel-lib
         )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)

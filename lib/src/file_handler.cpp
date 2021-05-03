@@ -28,13 +28,9 @@ namespace grapher {
         return file_url_;
     }
 
-    QString FileHandler::getData() const {
+    QByteArray FileHandler::getData() const {
         QFile file(getLocalPath(file_url_));
-
-        if (!file.open(QFile::ReadOnly)) {
-            return "";
-        }
-
+        // TODO: error checking
         return file.readAll();
     }
 
@@ -59,20 +55,21 @@ namespace grapher {
         }
 
         emit fileOpened();
+
+        qDebug() << "File " << name << " opened";
     }
 
-    bool FileHandler::saveAs(const QUrl &file_url, const QString &data) {
+    bool FileHandler::saveAs(const QUrl &file_url, const QByteArray &data) {
         const auto path = getLocalPath(file_url);
 
         QFile file(path);
 
-        if (!file.open(QFile::WriteOnly | QFile::Truncate | QFile::Text)) {
+        if (!file.open(QIODevice::WriteOnly)) {
             emit error((tr("Cannot save: ") + file.errorString()));
             return false;
         }
 
-        QTextStream stream(&file);
-        stream << data;
+        file.write(data);
 
         if (file_url == file_url_) {
             return true;
@@ -81,10 +78,13 @@ namespace grapher {
         file_url_ = file_url;
         emit fileUrlChanged();
 
+        qDebug() << "File " << file_url << " saved";
+
+
         return true;
     }
 
-    bool FileHandler::save(const QString &data) {
+    bool FileHandler::save(const QByteArray &data) {
         return saveAs(file_url_, data);
     }
 
@@ -96,6 +96,4 @@ namespace grapher {
 
         return file_url.path();
     }
-
-
 }

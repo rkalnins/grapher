@@ -9,6 +9,9 @@
 #include <QFileInfo>
 #include <QTextStream>
 #include <QUrl>
+#include <QJsonDocument>
+#include <QJsonObject>
+
 
 #include "globals.h"
 
@@ -22,7 +25,7 @@ namespace grapher {
         Q_PROPERTY(QString fileName READ getFileName NOTIFY fileUrlChanged)
         Q_PROPERTY(QString fileType READ getFileType NOTIFY fileUrlChanged)
         Q_PROPERTY(QUrl fileUrl READ getFileUrl NOTIFY fileUrlChanged)
-        Q_PROPERTY(QString data READ getData)
+        Q_PROPERTY(QByteArray data READ getData)
 
     public:
         explicit FileHandler(QObject *parent = nullptr);
@@ -33,16 +36,16 @@ namespace grapher {
 
         QUrl getFileUrl() const;
 
-        QString getData() const;
+        QByteArray getData() const;
 
 
     public Q_SLOTS:
 
         void load(const QUrl &file_url);
 
-        bool saveAs(const QUrl &file_url, const QString &data);
+        bool saveAs(const QUrl &file_url, const QByteArray &data);
 
-        bool save(const QString &data);
+        bool save(const QByteArray &data);
 
     Q_SIGNALS:
 

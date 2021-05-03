@@ -5,32 +5,44 @@
 #pragma once
 
 #include <QObject>
+#include <QPointer>
 
 #include "globals.h"
 
-namespace grapher::models {
-    class GRAPHER_EXPORT MenuModel : public QObject {
-    Q_OBJECT
+namespace grapher {
+    class WorkspaceHandler;
 
-        Q_DISABLE_COPY_MOVE(MenuModel)
+    namespace models {
 
-        Q_PROPERTY(QString title READ getTitle NOTIFY titleChanged)
-        Q_PROPERTY(bool isNewWorkspace READ isNewWorkspace NOTIFY isNewWorkspaceChanged)
 
-    public:
+        class GRAPHER_EXPORT MenuModel : public QObject {
+        Q_OBJECT
 
-        explicit MenuModel(QObject *parent = nullptr);
+            Q_DISABLE_COPY_MOVE(MenuModel)
 
-        virtual ~MenuModel() = default;
+            Q_PROPERTY(QString title READ getTitle NOTIFY titleChanged)
+            Q_PROPERTY(bool isNewWorkspace READ isNewWorkspace NOTIFY isNewWorkspaceChanged)
 
-        QString getTitle() const;
+        public:
 
-        bool isNewWorkspace() const;
+            explicit MenuModel(QObject *parent = nullptr);
 
-    Q_SIGNALS:
+            virtual ~MenuModel() = default;
 
-        void titleChanged();
+            void setWorkspace(WorkspaceHandler &handler);
 
-        void isNewWorkspaceChanged();
-    };
+            QString getTitle() const;
+
+            bool isNewWorkspace() const;
+
+        Q_SIGNALS:
+
+            void titleChanged();
+
+            void isNewWorkspaceChanged();
+
+        private:
+            QPointer<WorkspaceHandler> workspace_handler_;
+        };
+    }
 }
