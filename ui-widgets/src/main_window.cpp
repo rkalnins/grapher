@@ -27,6 +27,7 @@ MainWindow::MainWindow(MainController &main_controller, QWidget *parent) : QMain
     statusBar()->clearMessage();
 
     plot_handler_.setUI(ui_);
+    plot_handler_.setProvider(main_controller_->getDataProvider());
 
 }
 

@@ -3,9 +3,12 @@
 //
 
 #include "main_controller.h"
-#include "workspace_model.h"
+
 #include "workspace_handler.h"
+
+#include "workspace_model.h"
 #include "menu_model.h"
+#include "data_model.h"
 
 using namespace grapher::models;
 
@@ -44,6 +47,12 @@ namespace grapher::controllers {
         qDebug() << "reconnected menu model";
     }
 
+    void MainController::setDataModel(models::DataModel &model) {
+        data_model_ = &model;
+        data_provider_.setModel(data_model_);
+        qDebug() << "set data model";
+    }
+
     void MainController::openWorkspace() {
         if (!workspace_model_) {
             return;
@@ -64,6 +73,14 @@ namespace grapher::controllers {
 
     WorkspaceController *MainController::getWorkspaceController() {
         return &workspace_controller_;
+    }
+
+    DataController *MainController::getDataController() {
+        return &data_controller_;
+    }
+
+    DataProvider *MainController::getDataProvider() {
+        return &data_provider_;
     }
 
     void MainController::handleNewWorkspaceClicked() {
@@ -117,6 +134,7 @@ namespace grapher::controllers {
     }
 
     void MainController::pushSettingChange(const QJsonObject &data) {
+        data_model_->setData(data);
         qDebug() << "pushing setting change to mainWindow";
         emit dataChanged(data);
         qDebug() << "pushed setting change to mainWindow";
@@ -126,4 +144,5 @@ namespace grapher::controllers {
         emit titleChanged(menu_model_->getTitle());
         qDebug() << "title changing to " << menu_model_->getTitle();
     }
+
 }

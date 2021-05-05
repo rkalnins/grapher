@@ -7,10 +7,9 @@ find_package(Qt6 COMPONENTS Core Gui Widgets REQUIRED)
 add_executable(${PROJECT_NAME}
         src/main.cpp
         src/main_window.cpp
+        src/plot_handler.cpp
 
-        ../external/qcustomplot/qcustomplot.cpp
-        ../external/pugixml-1.11/src/pugixml.cpp
-        src/plot_handler.cpp src/plot_handler.h)
+        )
 
 target_include_directories(${PROJECT_NAME}
         PUBLIC
@@ -22,15 +21,19 @@ target_link_libraries(${PROJECT_NAME}
         Qt6::Core
         Qt6::Gui
         Qt6::Widgets
-        grapher-lib
         qcustomplot-lib
-        pugixml
+        grapher-lib
         )
 
 target_compile_features(${PROJECT_NAME}
         PUBLIC
         cxx_std_17
         )
+
+target_compile_definitions(${PROJECT_NAME}
+        PRIVATE
+        QCUSTOMPLOT_USE_LIBRARY
+)
 
 set_target_properties(${PROJECT_NAME}
         PROPERTIES

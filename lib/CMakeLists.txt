@@ -7,28 +7,36 @@ find_package(Qt6 COMPONENTS Core Gui Widgets REQUIRED)
 add_library(${PROJECT_NAME} SHARED
 
         src/file_handler.cpp
+        src/data_handler.cpp
+        src/data_provider.cpp
         src/workspace_handler.cpp
 
         src/controllers/main_controller.cpp
         src/controllers/menu_controller.cpp
+        src/controllers/workspace_controller.cpp
+        src/controllers/data_controller.cpp
 
+        src/models/data_model.cpp
         src/models/menu_model.cpp
         src/models/workspace_model.cpp
 
-        ../external/qcustomplot/qcustomplot.cpp
-        ../external/pugixml-1.11/src/pugixml.cpp
-
         # public
+        public/controllers/workspace_controller.h
+        public/controllers/data_controller.h
         public/controllers/main_controller.h
         public/controllers/menu_controller.h
+
         public/models/menu_model.h
         public/models/workspace_model.h
+        public/models/data_model.h
 
+        public/data_provider.h
         public/workspace_handler.h
         public/file_handler.h
+        public/data_handler.h
         public/globals.h
 
-        public/controllers/workspace_controller.h src/controllers/workspace_controller.cpp)
+        )
 
 target_include_directories(${PROJECT_NAME}
         PUBLIC
@@ -58,9 +66,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         Qt6::Core
         Qt6::Gui
         Qt6::Widgets
-        pugixml
-        qcustomplot-lib
-        qjsonmodel-lib
         )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
@@ -73,6 +78,6 @@ set_target_properties(${PROJECT_NAME}
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
         )
 
-configure_file(defaults.json ${CMAKE_BINARY_DIR}/bin)
+configure_file(defaults.json ${CMAKE_BINARY_DIR}/bin/defaults.json)
 
 add_subdirectory(tests)

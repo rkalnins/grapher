@@ -6,6 +6,4 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_subdirectory(lib)
 add_subdirectory(ui-widgets)
-add_subdirectory(external/qcustomplot)
-add_subdirectory(external/pugixml-1.11)
-add_subdirectory(external/QJsonModel)
+add_subdirectory(qcustomplot)

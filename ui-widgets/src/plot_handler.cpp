@@ -1,12 +1,17 @@
 
 #include <QDebug>
 
+#include "plot_handler.h"
+
 #include "ui_mainwindow.h"
 
-#include "plot_handler.h"
 
 void PlotHandler::setUI(Ui::MainWindow *ui) {
     ui_ = ui;
+}
+
+void PlotHandler::setProvider(grapher::DataProvider *provider) {
+    data_provider_ = provider;
 }
 
 void PlotHandler::setupPlots(const QJsonObject &grapher_data) {
@@ -60,8 +65,10 @@ void PlotHandler::dataSlot() {
     double key = time_start_.msecsTo(QTime::currentTime()) / 1000.0;
 
     if (key - last_point_key_ > min_replot_ms_) {
+        std::vector<double> data = data_provider_->getData();
+
         for (int i = 0; i < graph_count_; ++i) {
-            plot_->graph(i)->addData(key, qSin(key + i) + std::rand() / (double) RAND_MAX * 1 * qSin(key / 0.3843 + i));
+            plot_->graph(i)->addData(key, data[i]);
         }
         last_point_key_ = key;
     }

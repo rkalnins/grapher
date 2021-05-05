@@ -5,9 +5,11 @@
 #include "workspace_model.h"
 
 #include "menu_model.h"
+#include "data_model.h"
 
 using grapher::controllers::MainController;
 using grapher::models::MenuModel;
+using grapher::models::DataModel;
 using grapher::models::WorkspaceModel;
 
 int main(int argc, char *argv[]) {
@@ -17,6 +19,9 @@ int main(int argc, char *argv[]) {
 
     MenuModel menu_model;
     main_controller.setMenuModel(menu_model);
+
+    DataModel data_model;
+    main_controller.setDataModel(data_model);
 
     WorkspaceModel workspace_model;
     main_controller.setWorkspaceModel(workspace_model);

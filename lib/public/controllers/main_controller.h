@@ -11,6 +11,9 @@
 
 #include "menu_controller.h"
 #include "workspace_controller.h"
+#include "data_controller.h"
+
+#include "data_provider.h"
 
 
 #include "globals.h"
@@ -19,6 +22,8 @@
 namespace grapher {
     namespace models {
         class MenuModel;
+
+        class DataModel;
 
         class WorkspaceModel;
     }
@@ -31,6 +36,8 @@ namespace grapher {
 
             Q_PROPERTY(controllers::MenuController *menuController READ getMenuController CONSTANT);
             Q_PROPERTY(controllers::WorkspaceController *workspaceController READ getWorkspaceController CONSTANT);
+            Q_PROPERTY(controllers::DataController *dataController READ getDataController CONSTANT);
+            Q_PROPERTY(DataProvider *dataProvider READ getDataProvider CONSTANT)
 
         public:
             explicit MainController(QObject *parent = nullptr);
@@ -39,11 +46,17 @@ namespace grapher {
 
             WorkspaceController *getWorkspaceController();
 
+            DataController *getDataController();
+
+            DataProvider *getDataProvider();
+
             virtual ~MainController() = default;
 
             void setWorkspaceModel(models::WorkspaceModel &model);
 
             void setMenuModel(models::MenuModel &model);
+
+            void setDataModel(models::DataModel &model);
 
         Q_SIGNALS:
 
@@ -54,8 +67,14 @@ namespace grapher {
         private:
             MenuController menu_controller_;
             WorkspaceController workspace_controller_;
+            DataController data_controller_;
+
             models::MenuModel *menu_model_{nullptr};
             models::WorkspaceModel *workspace_model_{nullptr};
+            models::DataModel *data_model_{nullptr};
+
+            DataProvider data_provider_;
+
             QMetaObject::Connection workspace_created_connection_;
 
 

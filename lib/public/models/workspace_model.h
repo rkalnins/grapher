@@ -47,6 +47,8 @@ namespace grapher {
 
             void saveAs(const QUrl &file_url);
 
+            void setData(const QJsonObject &data);
+
         public Q_SLOTS:
 
             void newWorkspace();
@@ -54,8 +56,6 @@ namespace grapher {
             void openWorkspace(const QUrl &url);
 
             void closeWorkspace();
-
-            void setData(const QJsonObject &data);
 
             void notifyWorkspaceUpdated(const QJsonObject &data);
 
