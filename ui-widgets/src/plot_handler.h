@@ -32,6 +32,8 @@ private:
     QTimer data_timer_;
     Ui::MainWindow *ui_;
 
+    QTime time_start_{};
+    double last_point_key_{0};
     double min_replot_ms_{0.0};
     int x_default_span_{0};
 

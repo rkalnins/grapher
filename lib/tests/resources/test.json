@@ -1,0 +1,28 @@
+{
+    "grapher": {
+        "graphs": [
+            {
+                "pen": [
+                    60,
+                    110,
+                    255
+                ]
+            },
+            {
+                "pen": [
+                    20,
+                    110,
+                    40
+                ]
+            }
+        ],
+        "min-replot": 0.002,
+        "time-format": "%m:%s:%z",
+        "x-default-span": 8,
+        "y-range-default": [
+            -3,
+            3
+        ]
+    },
+    "name": "untitled-default-new"
+}

@@ -13,6 +13,7 @@ void PlotHandler::setupPlots(const QJsonObject &grapher_data) {
     qDebug() << "Setting up plots";
 
     plot_ = ui_->customPlot;
+    plot_->clearGraphs();
 
     QJsonArray graphs = grapher_data["graphs"].toArray();
 
@@ -38,8 +39,11 @@ void PlotHandler::setupPlots(const QJsonObject &grapher_data) {
     connect(plot_->yAxis, SIGNAL(rangeChanged(QCPRange)), plot_->yAxis2, SLOT(setRange(QCPRange)));
 
     connect(&data_timer_, SIGNAL(timeout()), this, SLOT(dataSlot()));
-    data_timer_.start(0);
 
+    time_start_ = QTime::currentTime();
+    last_point_key_ = 0;
+
+    data_timer_.start(0);
 
     ui_->customPlot->replot();
 }
@@ -53,16 +57,13 @@ void PlotHandler::setupGraph(const QJsonObject &graph, int index) {
 }
 
 void PlotHandler::dataSlot() {
-    static QTime time_start = QTime::currentTime();
-    static double last_point_key = 0;
+    double key = time_start_.msecsTo(QTime::currentTime()) / 1000.0;
 
-    double key = time_start.msecsTo(QTime::currentTime()) / 1000.0;
-
-    if (key - last_point_key > min_replot_ms_) {
+    if (key - last_point_key_ > min_replot_ms_) {
         for (int i = 0; i < graph_count_; ++i) {
             plot_->graph(i)->addData(key, qSin(key + i) + std::rand() / (double) RAND_MAX * 1 * qSin(key / 0.3843 + i));
         }
-        last_point_key = key;
+        last_point_key_ = key;
     }
     plot_->xAxis->setRange(key, x_default_span_, Qt::AlignRight);
     plot_->replot();
