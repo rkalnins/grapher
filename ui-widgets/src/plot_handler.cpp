@@ -43,6 +43,10 @@ void PlotHandler::setupPlots(const QJsonObject &grapher_data) {
     connect(plot_->xAxis, SIGNAL(rangeChanged(QCPRange)), plot_->xAxis2, SLOT(setRange(QCPRange)));
     connect(plot_->yAxis, SIGNAL(rangeChanged(QCPRange)), plot_->yAxis2, SLOT(setRange(QCPRange)));
 
+    start();
+}
+
+void PlotHandler::start() {
     connect(&data_timer_, SIGNAL(timeout()), this, SLOT(dataSlot()));
 
     time_start_ = QTime::currentTime();
@@ -51,6 +55,10 @@ void PlotHandler::setupPlots(const QJsonObject &grapher_data) {
     data_timer_.start(0);
 
     ui_->customPlot->replot();
+}
+
+void PlotHandler::pause() {
+    disconnect(&data_timer_, SIGNAL(timeout()), this, SLOT(dataSlot()));
 }
 
 void PlotHandler::setupGraph(const QJsonObject &graph, int index) {

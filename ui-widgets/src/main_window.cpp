@@ -71,6 +71,9 @@ void MainWindow::createActions() {
     savewsas_action_ = new QAction(tr("&Save workspace as..."), this);
     connect(savewsas_action_, &QAction::triggered, this,
             &MainWindow::saveWorkspaceAs);
+
+    connect(ui_->startCapture, &QAction::triggered, &plot_handler_, &PlotHandler::start);
+    connect(ui_->stopCapture, &QAction::triggered, &plot_handler_, &PlotHandler::pause);
 }
 
 void MainWindow::updateTitle(const QString &title) {

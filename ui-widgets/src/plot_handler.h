@@ -49,4 +49,9 @@ public Q_SLOTS:
 
     void dataSlot();
 
+    void start();
+
+    void pause();
+
+
 };
