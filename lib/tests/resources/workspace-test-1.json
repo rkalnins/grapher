@@ -1,0 +1,28 @@
+{
+  "name": "Test 1 Workspace",
+  "grapher": {
+    "y-range-default": [
+      -2,
+      2
+    ],
+    "x-default-span": 4,
+    "time-format": "%m:%s:%z",
+    "min-replot": 0.002,
+    "graphs": [
+      {
+        "pen": [
+          40,
+          110,
+          255
+        ]
+      },
+      {
+        "pen": [
+          255,
+          110,
+          40
+        ]
+      }
+    ]
+  }
+}

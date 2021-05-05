@@ -73,4 +73,6 @@ set_target_properties(${PROJECT_NAME}
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
         )
 
+configure_file(defaults.json ${CMAKE_BINARY_DIR}/bin)
+
 add_subdirectory(tests)

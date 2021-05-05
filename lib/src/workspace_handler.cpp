@@ -13,7 +13,7 @@ namespace grapher {
     }
 
     QString WorkspaceHandler::getWorkspaceName() const {
-        return file_handler_.getFileName();
+        return data_["name"].toString();
     }
 
     QUrl WorkspaceHandler::getWorkspaceUrl() const {
@@ -91,7 +91,12 @@ namespace grapher {
         data_ = data;
         setNeedsUpdating(false);
 
-        emit workspaceUpdated();
+
+        qDebug() << "notifying workspace data";
+        emit workspaceUpdated(data_);
+        qDebug() << "notified workspace data";
+        qDebug() << QJsonDocument(data_).toJson(QJsonDocument::Compact);
+
     }
 
     void WorkspaceHandler::setIsNewWorkspace(bool is_new) {
@@ -114,10 +119,19 @@ namespace grapher {
 
     void WorkspaceHandler::onWorkspaceOpened() {
         needs_updating_ = true;
-        setWorkspaceData(QJsonDocument::fromJson(file_handler_.getData()).object());
+
+        QJsonDocument doc = QJsonDocument::fromJson(file_handler_.getData());
+
+        if (doc.isNull() || !doc.isObject()) {
+            qWarning() << "json data invalid";
+            return;
+        }
+
+        setWorkspaceData(doc.object());
         needs_updating_ = false;
         setIsNewWorkspace(false);
         emit workspaceOpened();
+        qDebug() << "done opening workspace";
     }
 
 

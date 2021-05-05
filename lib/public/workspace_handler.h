@@ -68,7 +68,7 @@ namespace grapher {
 
         void error(const QString &message);
 
-        void workspaceUpdated();
+        void workspaceUpdated(const QJsonObject &data);
 
         void needsUpdatingChanged();
 

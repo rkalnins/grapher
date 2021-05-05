@@ -49,6 +49,8 @@ namespace grapher {
 
             void titleChanged(const QString &new_title);
 
+            void dataChanged(const QJsonObject &data);
+
         private:
             MenuController menu_controller_;
             WorkspaceController workspace_controller_;
@@ -69,7 +71,9 @@ namespace grapher {
 
             void handleOpenWorkspaceClicked(const QUrl &url);
 
-            void handleSettingChange(const QString &key, QVariant &new_data);
+            void handleSettingChange(const QJsonObject &data);
+
+            void pushSettingChange(const QJsonObject &data);
 
             void handleTitleChanged();
 

@@ -13,6 +13,7 @@
 #include "qcustomplot.h"
 
 #include "main_controller.h"
+#include "plot_handler.h"
 
 namespace Ui {
     class MainWindow;
@@ -29,8 +30,6 @@ public:
 
     ~MainWindow() noexcept override;
 
-    void setupPlot(QCustomPlot *plot);
-
 private:
     void createActions();
 
@@ -46,9 +45,9 @@ private:
 
 private slots:
 
-    void realtimeDataSlot();
-
     void updateTitle(const QString &title);
+
+    void configure(const QJsonObject &data);
 
 private:
     QMenu *menu_{nullptr};
@@ -66,7 +65,7 @@ private:
 
     MainController *main_controller_;
 
-    QTimer data_timer_;
+    PlotHandler plot_handler_;
 
 };
 

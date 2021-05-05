@@ -4,6 +4,7 @@
 
 #include "main_controller.h"
 #include "workspace_model.h"
+#include "workspace_handler.h"
 #include "menu_model.h"
 
 using namespace grapher::models;
@@ -30,6 +31,7 @@ namespace grapher::controllers {
         workspace_model_ = &model;
         workspace_created_connection_ = connect(workspace_model_, &WorkspaceModel::workspaceCreated, this,
                                                 &MainController::openWorkspace);
+        qDebug() << "connected new model";
     }
 
     void MainController::setMenuModel(models::MenuModel &model) {
@@ -47,7 +49,13 @@ namespace grapher::controllers {
             return;
         }
 
+        disconnect(workspace_model_, &WorkspaceModel::workspaceUpdated, this,
+                   &MainController::pushSettingChange);
+
         menu_controller_.setWorkspace(*workspace_model_->getWorkspace());
+
+        connect(workspace_model_, &WorkspaceModel::workspaceUpdated, this,
+                &MainController::pushSettingChange);
     }
 
     MenuController *MainController::getMenuController() {
@@ -100,17 +108,22 @@ namespace grapher::controllers {
         workspace_model_->openWorkspace(url);
     }
 
-    void MainController::handleSettingChange(const QString &key, QVariant &new_data) {
+    void MainController::handleSettingChange(const QJsonObject &data) {
         if (!workspace_model_) {
             return;
         }
+        qDebug() << "handling setting change";
+        workspace_model_->setData(data);
+    }
 
-        workspace_model_->setData(key, new_data);
+    void MainController::pushSettingChange(const QJsonObject &data) {
+        qDebug() << "pushing setting change to mainWindow";
+        emit dataChanged(data);
+        qDebug() << "pushed setting change to mainWindow";
     }
 
     void MainController::handleTitleChanged() {
         emit titleChanged(menu_model_->getTitle());
         qDebug() << "title changing to " << menu_model_->getTitle();
     }
-
 }

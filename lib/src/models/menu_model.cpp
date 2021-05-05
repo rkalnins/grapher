@@ -50,9 +50,11 @@ namespace grapher::models {
     QString MenuModel::getTitle() const {
 
         if (!workspace_handler_) {
+            qDebug() << "No workspace handler";
             return {};
         }
-        return workspace_handler_->getWorkspaceName();
+        return workspace_handler_->getWorkspaceName() + " - " +
+               QFileInfo(workspace_handler_->getWorkspaceUrl().path()).fileName();
     }
 
     bool MenuModel::isNewWorkspace() const {

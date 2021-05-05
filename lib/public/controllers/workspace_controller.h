@@ -26,7 +26,7 @@ namespace grapher {
 
         Q_SIGNALS:
 
-            void settingUpdated(const QString &key, QVariant &new_data);
+            void settingUpdated(const QJsonObject &data);
         };
     }
 }

@@ -29,8 +29,21 @@ namespace grapher {
     }
 
     QByteArray FileHandler::getData() const {
-        QFile file(getLocalPath(file_url_));
-        // TODO: error checking
+
+        const auto name = getLocalPath(file_url_);
+
+        if (!QFile::exists(name)) {
+            qWarning() << "file does not exist: " << file_url_;
+            return QByteArray{};
+        }
+
+        QFile file(name);
+
+        if (!file.open(QFile::ReadOnly)) {
+            qWarning() << "file cannot be opened: " << file_url_;
+            return QByteArray{};
+        }
+
         return file.readAll();
     }
 

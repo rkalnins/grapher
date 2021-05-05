@@ -10,7 +10,7 @@ add_executable(${PROJECT_NAME}
 
         ../external/qcustomplot/qcustomplot.cpp
         ../external/pugixml-1.11/src/pugixml.cpp
-        )
+        src/plot_handler.cpp src/plot_handler.h)
 
 target_include_directories(${PROJECT_NAME}
         PUBLIC

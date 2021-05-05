@@ -55,11 +55,15 @@ namespace grapher {
 
             void closeWorkspace();
 
-            void setData(const QString &key, QVariant &new_data);
+            void setData(const QJsonObject &data);
 
-            Q_SIGNALS:
+            void notifyWorkspaceUpdated(const QJsonObject &data);
+
+        Q_SIGNALS:
 
             void workspaceCreated();
+
+            void workspaceUpdated(const QJsonObject &data);
 
         private:
 

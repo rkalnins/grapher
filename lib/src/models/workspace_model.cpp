@@ -6,7 +6,10 @@
 
 namespace grapher::models {
 
-    WorkspaceModel::WorkspaceModel(QObject *parent) : QStandardItemModel(parent) {}
+    WorkspaceModel::WorkspaceModel(QObject *parent) : QStandardItemModel(parent) {
+        connect(workspace_handler_.get(), &WorkspaceHandler::workspaceUpdated, this,
+                &WorkspaceModel::notifyWorkspaceUpdated);
+    }
 
     WorkspaceHandler *WorkspaceModel::getWorkspace() const {
         return workspace_handler_.get();
@@ -46,20 +49,29 @@ namespace grapher::models {
 
     void WorkspaceModel::newWorkspace() {
         workspace_handler_ = std::make_unique<WorkspaceHandler>();
+        workspace_handler_->load(QUrl("defaults.json"));
         emit workspaceCreated();
+        emit workspaceUpdated(workspace_handler_->getWorkspaceData());
     }
 
     void WorkspaceModel::openWorkspace(const QUrl &url) {
         workspace_handler_ = std::make_unique<WorkspaceHandler>();
         workspace_handler_->load(url);
         emit workspaceCreated();
+        emit workspaceUpdated(workspace_handler_->getWorkspaceData());
     }
 
     void WorkspaceModel::closeWorkspace() {
         qDebug() << "File closed";
     }
 
-    void WorkspaceModel::setData(const QString &key, QVariant &new_data) {
-        workspace_handler_->getWorkspaceData()[key] = QJsonValue::fromVariant(new_data);
+    void WorkspaceModel::setData(const QJsonObject &data) {
+        workspace_handler_->setWorkspaceData(data);
+    }
+
+    void WorkspaceModel::notifyWorkspaceUpdated(const QJsonObject &data) {
+        qDebug() << "notifying data set";
+        emit workspaceUpdated(data);
+        qDebug() << "notified data set";
     }
 }
