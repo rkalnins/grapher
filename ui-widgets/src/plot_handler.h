@@ -45,6 +45,8 @@ private:
 
     size_t graph_count_{0};
 
+    bool is_paused_{true};
+
 public Q_SLOTS:
 
     void dataSlot();
@@ -52,6 +54,8 @@ public Q_SLOTS:
     void start();
 
     void pause();
+
+    void toggle();
 
 
 };

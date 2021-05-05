@@ -59,6 +59,8 @@ private:
     QAction *savews_action_{nullptr};
     QAction *savewsas_action_{nullptr};
 
+    QAction *toggle_capture_{nullptr};
+
 private:
 
     Ui::MainWindow *ui_;

@@ -47,6 +47,10 @@ void PlotHandler::setupPlots(const QJsonObject &grapher_data) {
 }
 
 void PlotHandler::start() {
+    if (!is_paused_) {
+        return;
+    }
+
     connect(&data_timer_, SIGNAL(timeout()), this, SLOT(dataSlot()));
 
     time_start_ = QTime::currentTime();
@@ -55,10 +59,21 @@ void PlotHandler::start() {
     data_timer_.start(0);
 
     ui_->customPlot->replot();
+
+    is_paused_ = false;
 }
 
 void PlotHandler::pause() {
     disconnect(&data_timer_, SIGNAL(timeout()), this, SLOT(dataSlot()));
+    is_paused_ = true;
+}
+
+void PlotHandler::toggle() {
+    if (is_paused_) {
+        start();
+    } else {
+        pause();
+    }
 }
 
 void PlotHandler::setupGraph(const QJsonObject &graph, int index) {

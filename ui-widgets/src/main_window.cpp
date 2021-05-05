@@ -74,6 +74,11 @@ void MainWindow::createActions() {
 
     connect(ui_->startCapture, &QAction::triggered, &plot_handler_, &PlotHandler::start);
     connect(ui_->stopCapture, &QAction::triggered, &plot_handler_, &PlotHandler::pause);
+
+    toggle_capture_ = new QAction("&Toggle capture");
+    toggle_capture_->setShortcut(Qt::Key_Space);
+    addAction(toggle_capture_);
+    connect(toggle_capture_, &QAction::triggered, &plot_handler_, &PlotHandler::toggle);
 }
 
 void MainWindow::updateTitle(const QString &title) {
