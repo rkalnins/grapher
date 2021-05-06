@@ -49,6 +49,7 @@ namespace grapher::controllers {
 
     void MainController::setDataModel(models::DataModel &model) {
         data_model_ = &model;
+        data_model_->setup();
         data_provider_.setModel(data_model_);
         qDebug() << "set data model";
     }
@@ -81,6 +82,10 @@ namespace grapher::controllers {
 
     DataProvider *MainController::getDataProvider() {
         return &data_provider_;
+    }
+
+    DataModel *MainController::getDataModel() {
+        return data_model_;
     }
 
     void MainController::handleNewWorkspaceClicked() {

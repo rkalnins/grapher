@@ -11,7 +11,7 @@
 namespace grapher {
 
     class GRAPHER_EXPORT DataHandler : public QObject {
-        Q_OBJECT
+    Q_OBJECT
 
         Q_PROPERTY(QString name READ getName CONSTANT)
 

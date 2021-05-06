@@ -43,7 +43,7 @@ void PlotHandler::setupPlots(const QJsonObject &grapher_data) {
     connect(plot_->xAxis, SIGNAL(rangeChanged(QCPRange)), plot_->xAxis2, SLOT(setRange(QCPRange)));
     connect(plot_->yAxis, SIGNAL(rangeChanged(QCPRange)), plot_->yAxis2, SLOT(setRange(QCPRange)));
 
-    start();
+    ui_->statusBar->showMessage("Press \'Capture\' to start plotting");
 }
 
 void PlotHandler::start() {
@@ -61,11 +61,13 @@ void PlotHandler::start() {
     ui_->customPlot->replot();
 
     is_paused_ = false;
+    ui_->statusBar->showMessage("Capturing");
 }
 
 void PlotHandler::pause() {
     disconnect(&data_timer_, SIGNAL(timeout()), this, SLOT(dataSlot()));
     is_paused_ = true;
+    ui_->statusBar->showMessage("Paused");
 }
 
 void PlotHandler::toggle() {

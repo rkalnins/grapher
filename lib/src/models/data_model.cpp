@@ -7,6 +7,59 @@
 
 namespace grapher::models {
 
+    DataModel::DataModel(QObject *parent) : QAbstractTableModel(parent) {
+    }
+
+    void DataModel::setup() {
+        setHeaderData(0, Qt::Horizontal, tr("Name"));
+    }
+
+    int DataModel::columnCount(const QModelIndex &parent) const {
+        if (parent.isValid()) {
+            qDebug() << "parent col is valid";
+            return 0;
+        }
+        return column_count_;
+    }
+
+    int DataModel::rowCount(const QModelIndex &parent) const {
+        if (parent.isValid()) {
+            qDebug() << "parent row is valid";
+            return 0;
+        }
+        return data_handlers_.size();
+    }
+
+    QVariant DataModel::data(const QModelIndex &index, int role) const {
+        if (data_handlers_.empty()) {
+            qDebug() << "no handlers";
+            return QVariant();
+        }
+
+        if (!index.isValid()) {
+            return QVariant();
+        }
+
+        int row = index.row();
+        int col = index.column();
+
+        if (data_handlers_[row].get() == nullptr) {
+            qDebug() << "data handler null";
+            return QVariant();
+        }
+
+        if (role == Qt::DisplayRole) {
+            switch (col) {
+                case 0:
+                    return data_handlers_[row]->getName();
+                default:
+                    return QVariant();
+            }
+        }
+
+        return QVariant();
+    }
+
     void DataModel::addDataHandler(DataHandler &handler) {
         data_handlers_.push_back(std::make_unique<DataHandler>(&handler));
     }
@@ -31,10 +84,10 @@ namespace grapher::models {
         return data_handlers_[idx].get();
     }
 
-    std::vector<double> DataModel::getData() {
+    std::vector<double> DataModel::getStreamData() {
         std::vector<double> data;
         data.reserve(data_handlers_.size());
-        for (const auto& handler : data_handlers_) {
+        for (const auto &handler : data_handlers_) {
             data.push_back(handler->get());
         }
 
@@ -47,15 +100,16 @@ namespace grapher::models {
         QJsonArray graphs = data_["graphs"].toArray();
         qDebug() << "setting data model data";
 
-        for (const auto& graph : graphs) {
-            DataHandler handler;
+        int i = 0;
+
+        for (const auto &graph : graphs) {
+            auto handler = std::make_unique<DataHandler>();
             QJsonObject graph_properties = graph.toObject();
-            handler.setup(graph_properties);
-            addDataHandler(handler);
-            qDebug() << "added handler " << handler.getName();
+            handler->setup(graph_properties);
+            data_handlers_.push_back(std::move(handler));
+            qDebug() << "added handler " << data_handlers_[i++]->getName();
         }
     }
-
 
 
 }

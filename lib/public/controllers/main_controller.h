@@ -14,7 +14,7 @@
 #include "data_controller.h"
 
 #include "data_provider.h"
-
+#include "data_model.h"
 
 #include "globals.h"
 
@@ -34,10 +34,11 @@ namespace grapher {
 
             Q_DISABLE_COPY_MOVE(MainController)
 
-            Q_PROPERTY(controllers::MenuController *menuController READ getMenuController CONSTANT);
-            Q_PROPERTY(controllers::WorkspaceController *workspaceController READ getWorkspaceController CONSTANT);
-            Q_PROPERTY(controllers::DataController *dataController READ getDataController CONSTANT);
+            Q_PROPERTY(controllers::MenuController *menuController READ getMenuController CONSTANT)
+            Q_PROPERTY(controllers::WorkspaceController *workspaceController READ getWorkspaceController CONSTANT)
+            Q_PROPERTY(controllers::DataController *dataController READ getDataController CONSTANT)
             Q_PROPERTY(DataProvider *dataProvider READ getDataProvider CONSTANT)
+            Q_PROPERTY(models::DataModel *dataModel READ getDataModel CONSTANT)
 
         public:
             explicit MainController(QObject *parent = nullptr);
@@ -50,6 +51,8 @@ namespace grapher {
 
             DataProvider *getDataProvider();
 
+            models::DataModel *getDataModel();
+
             virtual ~MainController() = default;
 
             void setWorkspaceModel(models::WorkspaceModel &model);
@@ -57,6 +60,7 @@ namespace grapher {
             void setMenuModel(models::MenuModel &model);
 
             void setDataModel(models::DataModel &model);
+
 
         Q_SIGNALS:
 

@@ -9,14 +9,13 @@
 #include "globals.h"
 
 
-
 namespace grapher {
     namespace models {
         class DataModel;
     }
 
     class GRAPHER_EXPORT DataProvider : public QObject {
-        Q_OBJECT
+    Q_OBJECT
 
     public:
         explicit DataProvider(QObject *parent = nullptr) : QObject(parent) {}

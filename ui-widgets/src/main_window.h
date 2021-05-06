@@ -9,6 +9,8 @@
 #include <QSessionManager>
 #include <QFileDialog>
 #include <QString>
+#include <QTabWidget>
+#include <QTableView>
 
 #include "qcustomplot.h"
 

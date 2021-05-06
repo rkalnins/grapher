@@ -12,7 +12,7 @@ namespace grapher {
     }
 
     std::vector<double> DataProvider::getData() {
-        return model_->getData();
+        return model_->getStreamData();
     }
 
 }

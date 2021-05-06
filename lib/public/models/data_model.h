@@ -9,6 +9,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QJsonArray>
+#include <QAbstractTableModel>
 
 #include "data_handler.h"
 
@@ -16,32 +17,43 @@
 
 namespace grapher::models {
 
-        class GRAPHER_EXPORT DataModel : public QObject {
-        Q_OBJECT
+    class GRAPHER_EXPORT DataModel : public QAbstractTableModel {
+    Q_OBJECT
 
-            Q_DISABLE_COPY_MOVE(DataModel)
+        Q_DISABLE_COPY_MOVE(DataModel)
 
-        public:
+    public:
 
-            explicit DataModel(QObject *parent = nullptr) : QObject(parent) {};
+        explicit DataModel(QObject *parent = nullptr);
 
-            virtual ~DataModel() = default;
+        virtual ~DataModel() = default;
 
-            DataHandler *getDataHandler(const QString &name) const;
+        void setup();
 
-            void addDataHandler(DataHandler &handler);
+        int columnCount(const QModelIndex &parent) const override;
 
-            std::vector<double> getData();
+        int rowCount(const QModelIndex &parent) const override;
 
-            void setDataFromJson(const QJsonObject &data);
+        QVariant data(const QModelIndex &index, int role) const override;
 
-        private:
 
-            int getNameFromIndex(const QString &name) const;
+        DataHandler *getDataHandler(const QString &name) const;
 
-            std::vector<std::unique_ptr<DataHandler>> data_handlers_;
+        void addDataHandler(DataHandler &handler);
 
-            QJsonObject data_;
+        std::vector<double> getStreamData();
 
-        };
-    }
+        void setDataFromJson(const QJsonObject &data);
+
+    private:
+
+        int getNameFromIndex(const QString &name) const;
+
+        std::vector<std::unique_ptr<DataHandler>> data_handlers_;
+
+        QJsonObject data_;
+
+        int column_count_ = 5;
+
+    };
+}

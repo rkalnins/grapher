@@ -10,6 +10,7 @@
 #include "main_controller.h"
 
 #include "menu_model.h"
+#include "data_model.h"
 
 
 MainWindow::MainWindow(MainController &main_controller, QWidget *parent) : QMainWindow(parent),
@@ -19,28 +20,41 @@ MainWindow::MainWindow(MainController &main_controller, QWidget *parent) : QMain
     connect(main_controller_, &MainController::dataChanged, this, &MainWindow::configure);
 
     ui_->setupUi(this);
-    setGeometry(400, 250, 542, 390);
+    setGeometry(100, 100, 1000, 800);
 
     createActions();
     createMenus();
 
-    statusBar()->clearMessage();
+    ui_->statusBar->clearMessage();
 
     plot_handler_.setUI(ui_);
     plot_handler_.setProvider(main_controller_->getDataProvider());
-
 }
 
 MainWindow::~MainWindow() noexcept {
+    delete newws_action_;
+    delete openws_action_;
+    delete savews_action_;
+    delete savewsas_action_;
+    delete toggle_capture_;
+
+
     delete ui_;
 }
 
 void MainWindow::configure(const QJsonObject &data) {
-    qDebug() << "configuring with " << data["name"].toString() << "file";
-
+    qDebug() << "configuring";
     QJsonObject grapher_config = data["grapher"].toObject();
     plot_handler_.setupPlots(grapher_config);
-    statusBar()->clearMessage();
+    ui_->statusBar->showMessage("Configured with" + data["name"].toString(), 5);
+
+    if (!main_controller_->getDataModel()) {
+        qDebug() << "model is nullptr";
+        return;
+    }
+    ui_->tableView->setModel(main_controller_->getDataModel());
+    ui_->tableView->show();
+    qDebug() << "configured";
 }
 
 
@@ -83,7 +97,6 @@ void MainWindow::createActions() {
 
 void MainWindow::updateTitle(const QString &title) {
     setWindowTitle(title);
-    qDebug() << "title changed to " << title;
 }
 
 void MainWindow::openWorkspace() {

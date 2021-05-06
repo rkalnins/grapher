@@ -33,7 +33,7 @@ target_compile_features(${PROJECT_NAME}
 target_compile_definitions(${PROJECT_NAME}
         PRIVATE
         QCUSTOMPLOT_USE_LIBRARY
-)
+        )
 
 set_target_properties(${PROJECT_NAME}
         PROPERTIES
