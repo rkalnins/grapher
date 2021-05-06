@@ -134,7 +134,7 @@ namespace grapher::controllers {
     }
 
     void MainController::pushSettingChange(const QJsonObject &data) {
-        data_model_->setData(data);
+        data_model_->setDataFromJson(data);
         qDebug() << "pushing setting change to mainWindow";
         emit dataChanged(data);
         qDebug() << "pushed setting change to mainWindow";

@@ -33,7 +33,7 @@ namespace grapher::models {
 
             std::vector<double> getData();
 
-            void setData(const QJsonObject &data);
+            void setDataFromJson(const QJsonObject &data);
 
         private:
 

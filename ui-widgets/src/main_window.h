@@ -51,8 +51,6 @@ private slots:
 
 private:
     QMenu *menu_{nullptr};
-    QMenu *edit_{nullptr};
-    QMenu *help_{nullptr};
 
     QAction *newws_action_{nullptr};
     QAction *openws_action_{nullptr};

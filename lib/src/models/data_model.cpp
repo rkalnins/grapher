@@ -41,7 +41,7 @@ namespace grapher::models {
         return data;
     }
 
-    void DataModel::setData(const QJsonObject &data) {
+    void DataModel::setDataFromJson(const QJsonObject &data) {
         data_ = data["grapher"].toObject();
 
         QJsonArray graphs = data_["graphs"].toArray();
