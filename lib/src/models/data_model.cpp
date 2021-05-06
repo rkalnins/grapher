@@ -95,12 +95,15 @@ namespace grapher::models {
     }
 
     void DataModel::setDataFromJson(const QJsonObject &data) {
+        data_handlers_.erase(data_handlers_.begin(), data_handlers_.end());
+        data_handlers_.clear();
         data_ = data["grapher"].toObject();
 
         QJsonArray graphs = data_["graphs"].toArray();
         qDebug() << "setting data model data";
 
         int i = 0;
+        data_handlers_.reserve(graphs.size());
 
         for (const auto &graph : graphs) {
             auto handler = std::make_unique<DataHandler>();

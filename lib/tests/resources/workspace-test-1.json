@@ -10,6 +10,7 @@
     "min-replot": 0.002,
     "graphs": [
       {
+        "name": "test-c",
         "pen": [
           40,
           110,
@@ -17,6 +18,7 @@
         ]
       },
       {
+        "name": "test-d",
         "pen": [
           255,
           110,
