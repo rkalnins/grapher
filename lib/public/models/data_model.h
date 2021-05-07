@@ -36,14 +36,21 @@ namespace grapher::models {
 
         QVariant data(const QModelIndex &index, int role) const override;
 
+        bool setData(const QModelIndex &index, const QVariant &value, int role) override;
+
+        QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
         DataHandler *getDataHandler(const QString &name) const;
 
-        void addDataHandler(DataHandler &handler);
+        DataHandler *getDataHandler(const int &idx) const;
 
         std::vector<double> getStreamData();
 
         void setDataFromJson(const QJsonObject &data);
+
+        int getHandlerCount();
+
+        Qt::ItemFlags flags(const QModelIndex &index) const override;
 
     private:
 

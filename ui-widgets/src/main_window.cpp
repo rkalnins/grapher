@@ -3,14 +3,16 @@
 //
 
 #include <QtWidgets>
+#include <QModelIndex>
 
 #include "main_window.h"
 #include "ui_mainwindow.h"
 
+#include "config_table_view.h"
+
 #include "main_controller.h"
 
 #include "menu_model.h"
-#include "data_model.h"
 
 
 MainWindow::MainWindow(MainController &main_controller, QWidget *parent) : QMainWindow(parent),
@@ -52,8 +54,13 @@ void MainWindow::configure(const QJsonObject &data) {
         qDebug() << "model is nullptr";
         return;
     }
-    ui_->tableView->setModel(main_controller_->getDataModel());
-    ui_->tableView->show();
+
+    ConfigTableView *table = ui_->tableView;
+    table->setModel(main_controller_->getDataModel());
+    table->setup(main_controller_->getDataModel());
+    table->show();
+
+
     qDebug() << "configured";
 }
 

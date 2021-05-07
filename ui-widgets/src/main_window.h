@@ -2,8 +2,7 @@
 // Created by Roberts Kalnins on 30/04/2021.
 //
 
-#ifndef GRAPHER_MAIN_WINDOW_H
-#define GRAPHER_MAIN_WINDOW_H
+#pragma once
 
 #include <QMainWindow>
 #include <QSessionManager>
@@ -70,6 +69,3 @@ private:
     PlotHandler plot_handler_;
 
 };
-
-
-#endif //GRAPHER_MAIN_WINDOW_H

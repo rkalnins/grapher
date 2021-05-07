@@ -29,7 +29,7 @@
        <attribute name="title">
         <string>Tab 2</string>
        </attribute>
-       <widget class="QTableView" name="tableView">
+       <widget class="ConfigTableView" name="tableView">
         <property name="geometry">
          <rect>
           <x>5</x>
@@ -79,6 +79,11 @@
    <extends>QWidget</extends>
    <header location="global">qcustomplot.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ConfigTableView</class>
+   <extends>QTableView</extends>
+   <header>config_table_view.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
