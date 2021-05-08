@@ -9,11 +9,13 @@
 #include <QDebug>
 #include <QUrl>
 
+#include "qcustomplot.h"
+
+#include "graph_data_csv_handler.h"
 #include "menu_controller.h"
 #include "workspace_controller.h"
 #include "data_controller.h"
 
-#include "data_provider.h"
 #include "data_model.h"
 
 #include "globals.h"
@@ -37,7 +39,6 @@ namespace grapher {
             Q_PROPERTY(controllers::MenuController *menuController READ getMenuController CONSTANT)
             Q_PROPERTY(controllers::WorkspaceController *workspaceController READ getWorkspaceController CONSTANT)
             Q_PROPERTY(controllers::DataController *dataController READ getDataController CONSTANT)
-            Q_PROPERTY(DataProvider *dataProvider READ getDataProvider CONSTANT)
             Q_PROPERTY(models::DataModel *dataModel READ getDataModel CONSTANT)
 
         public:
@@ -49,7 +50,6 @@ namespace grapher {
 
             DataController *getDataController();
 
-            DataProvider *getDataProvider();
 
             models::DataModel *getDataModel();
 
@@ -76,11 +76,11 @@ namespace grapher {
             WorkspaceController workspace_controller_;
             DataController data_controller_;
 
+            GraphDataCsvHandler export_handler_;
+
             models::MenuModel *menu_model_{nullptr};
             models::WorkspaceModel *workspace_model_{nullptr};
             models::DataModel *data_model_{nullptr};
-
-            DataProvider data_provider_;
 
             QMetaObject::Connection workspace_created_connection_;
 
@@ -88,6 +88,8 @@ namespace grapher {
         private Q_SLOTS:
 
             void openWorkspace();
+
+            void handleCsvExport(const QUrl &url, std::vector<QCPDataContainer<QCPGraphData> *> &data);
 
             void handleNewWorkspaceClicked();
 

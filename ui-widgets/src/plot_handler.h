@@ -8,7 +8,7 @@
 
 #include "qcustomplot.h"
 
-#include "data_provider.h"
+#include "data_model.h"
 #include "data_handler.h"
 
 namespace Ui {
@@ -25,7 +25,7 @@ public:
 
     void setUI(Ui::MainWindow *ui);
 
-    void setProvider(grapher::DataProvider *provider);
+    void setModel(grapher::models::DataModel *model);
 
     void setupPlots(const QJsonObject &grapher_data);
 
@@ -37,12 +37,15 @@ private:
     QTimer data_timer_;
     Ui::MainWindow *ui_{nullptr};
 
-    grapher::DataProvider *data_provider_{nullptr};
+    grapher::models::DataModel *data_model_{nullptr};
 
     QTime time_start_{};
     double last_point_key_{0};
     double min_replot_ms_{0.0};
+
     int x_default_span_{0};
+    double default_lower_y_bound_{-1.0};
+    double default_upper_y_bound_{1.0};
 
     size_t graph_count_{0};
 
@@ -57,6 +60,10 @@ public Q_SLOTS:
     void pause();
 
     void toggle();
+
+    void toggleFreeMove(bool on);
+
+    void resetView();
 
     void updateGraph(int idx, grapher::DataHandler *handler);
 

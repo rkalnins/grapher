@@ -93,6 +93,7 @@ namespace grapher {
 
         qDebug() << "File " << file_url << " saved";
 
+        file.close();
 
         return true;
     }

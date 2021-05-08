@@ -7,6 +7,8 @@
 #include <QObject>
 #include <QDebug>
 
+#include "qcustomplot.h"
+
 #include "globals.h"
 
 
@@ -42,6 +44,8 @@ namespace grapher {
             void saveWorkspaceAsClicked(const QUrl &url);
 
             void openWorkspaceClicked(const QUrl &url);
+
+            void exportDataClicked(const QUrl &url, std::vector<QCPDataContainer<QCPGraphData> *> &data);
 
         private:
             models::MenuModel *menu_model_{nullptr};

@@ -44,11 +44,14 @@ private:
 
     void newWorkspace();
 
+    void exportData();
+
 private slots:
 
     void updateTitle(const QString &title);
 
     void configure(const QJsonObject &data);
+
 
 private:
     QMenu *menu_{nullptr};
@@ -57,6 +60,7 @@ private:
     QAction *openws_action_{nullptr};
     QAction *savews_action_{nullptr};
     QAction *savewsas_action_{nullptr};
+    QAction *export_action_{nullptr};
 
     QAction *toggle_capture_{nullptr};
 

@@ -44,7 +44,7 @@ namespace grapher::models {
 
         DataHandler *getDataHandler(const int &idx) const;
 
-        std::vector<double> getStreamData();
+        double getStreamData(int idx);
 
         void setDataFromJson(const QJsonObject &data);
 

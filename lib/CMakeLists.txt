@@ -8,7 +8,6 @@ add_library(${PROJECT_NAME} SHARED
 
         src/file_handler.cpp
         src/data_handler.cpp
-        src/data_provider.cpp
         src/workspace_handler.cpp
 
         src/controllers/main_controller.cpp
@@ -30,14 +29,13 @@ add_library(${PROJECT_NAME} SHARED
         public/models/workspace_model.h
         public/models/data_model.h
 
-        public/data_provider.h
         public/workspace_handler.h
         public/file_handler.h
         public/data_handler.h
         public/globals.h
 
         public/util/json_util.h
-        )
+        public/graph_data_csv_handler.h src/graph_data_csv_handler.cpp)
 
 target_include_directories(${PROJECT_NAME}
         PUBLIC
@@ -69,6 +67,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         Qt6::Core
         Qt6::Gui
         Qt6::Widgets
+        qcustomplot-lib
         )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)

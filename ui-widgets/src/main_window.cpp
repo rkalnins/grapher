@@ -30,7 +30,7 @@ MainWindow::MainWindow(MainController &main_controller, QWidget *parent) : QMain
     ui_->statusBar->clearMessage();
 
     plot_handler_.setUI(ui_);
-    plot_handler_.setProvider(main_controller_->getDataProvider());
+    plot_handler_.setModel(main_controller_->getDataModel());
 
     connect(ui_->tableView, &ConfigTableView::settingsUpdated, &plot_handler_, &PlotHandler::updateGraph);
 }
@@ -41,6 +41,7 @@ MainWindow::~MainWindow() noexcept {
     delete savews_action_;
     delete savewsas_action_;
     delete toggle_capture_;
+    delete export_action_;
 
 
     delete ui_;
@@ -73,6 +74,7 @@ void MainWindow::createMenus() {
     menu_->addAction(openws_action_);
     menu_->addAction(savews_action_);
     menu_->addAction(savewsas_action_);
+    menu_->addAction(export_action_);
 
     menuBar()->addAction(menu_->menuAction());
     menuBar()->setNativeMenuBar(false);
@@ -95,8 +97,13 @@ void MainWindow::createActions() {
     connect(savewsas_action_, &QAction::triggered, this,
             &MainWindow::saveWorkspaceAs);
 
+    export_action_ = new QAction(tr("&Export to CSV..."), this);
+    connect(export_action_, &QAction::triggered, this, &MainWindow::exportData);
+
     connect(ui_->startCapture, &QAction::triggered, &plot_handler_, &PlotHandler::start);
     connect(ui_->stopCapture, &QAction::triggered, &plot_handler_, &PlotHandler::pause);
+    connect(ui_->freeMove, &QAction::toggled, &plot_handler_, &PlotHandler::toggleFreeMove);
+    connect(ui_->resetView, &QAction::triggered, &plot_handler_, &PlotHandler::resetView);
 
     toggle_capture_ = new QAction("&Toggle capture");
     toggle_capture_->setShortcut(Qt::Key_Space);
@@ -139,5 +146,22 @@ void MainWindow::saveWorkspaceAs() {
     auto filename = QFileDialog::getSaveFileUrl();
     if (!filename.isEmpty()) {
         emit main_controller_->getMenuController()->saveWorkspaceAsClicked(filename);
+    }
+}
+
+void MainWindow::exportData() {
+    QFileDialog dialog(this);
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setViewMode(QFileDialog::Detail);
+
+    auto filename = QFileDialog::getSaveFileUrl();
+    if (!filename.isEmpty()) {
+        std::vector<QCPDataContainer<QCPGraphData> *> graph_data;
+
+        for (int i = 0; i < ui_->customPlot->graphCount(); ++i) {
+            graph_data.push_back(ui_->customPlot->graph(i)->data().get());
+        }
+
+        emit main_controller_->getMenuController()->exportDataClicked(filename, graph_data);
     }
 }

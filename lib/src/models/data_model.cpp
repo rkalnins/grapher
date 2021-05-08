@@ -120,6 +120,7 @@ namespace grapher::models {
             QJsonArray pen_array;
 
             handler_data["name"] = handler->getName();
+            handler_data["visible"] = handler->isVisible();
 
             const QColor &c = handler->getPenColor();
 
@@ -135,14 +136,8 @@ namespace grapher::models {
         emit collectedGraphData(graphs_data);
     }
 
-    std::vector<double> DataModel::getStreamData() {
-        std::vector<double> data;
-        data.reserve(data_handlers_.size());
-        for (const auto &handler : data_handlers_) {
-            data.push_back(handler->get());
-        }
-
-        return data;
+    double DataModel::getStreamData(int idx) {
+        return data_handlers_[idx]->get();
     }
 
     void DataModel::setDataFromJson(const QJsonObject &data) {

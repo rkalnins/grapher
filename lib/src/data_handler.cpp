@@ -13,6 +13,7 @@
 namespace grapher {
     void DataHandler::setup(QJsonObject &data) {
         name_ = data["name"].toString();
+        visible_ = data["visible"].toBool();
 
         QJsonArray pen_color = data["pen"].toArray();
         pen_color_.setRed(pen_color[0].toInt());
@@ -24,7 +25,7 @@ namespace grapher {
 #ifdef HANDLER_PROVIDE_TEST_DATA
         static int test = 0;
         ++test;
-        return qSin(test) + std::rand() / (double) RAND_MAX * 1 * qSin(test / 0.3843);
+        return qSin(test / pen_color_.blue()) + std::rand() / (double) RAND_MAX * 1 * qSin(test / 0.3843);
 #else
         return current_data_;
 #endif

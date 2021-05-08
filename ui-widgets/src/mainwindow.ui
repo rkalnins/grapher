@@ -18,16 +18,16 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QCustomPlot" name="customPlot">
        <attribute name="title">
-        <string>Tab 1</string>
+        <string>Plot</string>
        </attribute>
       </widget>
       <widget class="QWidget" name="configurePlot">
        <attribute name="title">
-        <string>Tab 2</string>
+        <string>Configure</string>
        </attribute>
        <widget class="ConfigTableView" name="tableView">
         <property name="geometry">
@@ -57,6 +57,8 @@
    </attribute>
    <addaction name="startCapture"/>
    <addaction name="stopCapture"/>
+   <addaction name="freeMove"/>
+   <addaction name="resetView"/>
   </widget>
   <action name="startCapture">
    <property name="text">
@@ -69,6 +71,19 @@
   <action name="stopCapture">
    <property name="text">
     <string>Pause</string>
+   </property>
+  </action>
+  <action name="freeMove">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Free Move</string>
+   </property>
+  </action>
+  <action name="resetView">
+   <property name="text">
+    <string>Reset View</string>
    </property>
   </action>
  </widget>

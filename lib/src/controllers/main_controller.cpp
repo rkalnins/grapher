@@ -6,6 +6,7 @@
 
 #include "workspace_handler.h"
 
+
 #include "workspace_model.h"
 #include "menu_model.h"
 #include "data_model.h"
@@ -24,6 +25,7 @@ namespace grapher::controllers {
                 &MainController::handleNewWorkspaceClicked);
         connect(&menu_controller_, &MenuController::openWorkspaceClicked, this,
                 &MainController::handleOpenWorkspaceClicked);
+        connect(&menu_controller_, &MenuController::exportDataClicked, this, &MainController::handleCsvExport);
 
         connect(&workspace_controller_, &WorkspaceController::settingUpdated, this,
                 &MainController::handleSettingChange);
@@ -50,7 +52,6 @@ namespace grapher::controllers {
     void MainController::setDataModel(models::DataModel &model) {
         data_model_ = &model;
         data_model_->setup();
-        data_provider_.setModel(data_model_);
         qDebug() << "set data model";
     }
 
@@ -105,10 +106,6 @@ namespace grapher::controllers {
         return &data_controller_;
     }
 
-    DataProvider *MainController::getDataProvider() {
-        return &data_provider_;
-    }
-
     DataModel *MainController::getDataModel() {
         return data_model_;
     }
@@ -121,6 +118,10 @@ namespace grapher::controllers {
         }
 
         workspace_model_->newWorkspace();
+    }
+
+    void MainController::handleCsvExport(const QUrl &url, std::vector<QCPDataContainer<QCPGraphData> *> &data) {
+        export_handler_.exportTo(url, data);
     }
 
     void MainController::handleSaveWorkspaceClicked() {
