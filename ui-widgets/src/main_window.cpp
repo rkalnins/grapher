@@ -132,6 +132,7 @@ void MainWindow::openWorkspace() {
 
 void MainWindow::newWorkspace() {
     emit main_controller_->getMenuController()->newWorkspaceClicked();
+    ui_->customPlot->replot();
 }
 
 void MainWindow::saveWorkspace() {

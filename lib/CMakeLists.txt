@@ -9,6 +9,7 @@ add_library(${PROJECT_NAME} SHARED
         src/file_handler.cpp
         src/data_handler.cpp
         src/workspace_handler.cpp
+        src/graph_data_csv_handler.cpp
 
         src/controllers/main_controller.cpp
         src/controllers/menu_controller.cpp
@@ -19,6 +20,7 @@ add_library(${PROJECT_NAME} SHARED
         src/models/menu_model.cpp
         src/models/workspace_model.cpp
 
+
         # public
         public/controllers/workspace_controller.h
         public/controllers/data_controller.h
@@ -28,25 +30,37 @@ add_library(${PROJECT_NAME} SHARED
         public/models/menu_model.h
         public/models/workspace_model.h
         public/models/data_model.h
+        public/models/abstract_data_provider_model.h
 
+        public/util/json_util.h
+
+        public/data_channel.h
         public/workspace_handler.h
         public/file_handler.h
         public/data_handler.h
         public/globals.h
+        public/graph_data_csv_handler.h
 
-        public/util/json_util.h
-        public/graph_data_csv_handler.h src/graph_data_csv_handler.cpp)
+        src/data_channel.cpp
+        src/models/abstract_data_provider_model.cpp
+        public/models/data_providers_model.h
+        src/models/data_providers_model.cpp
+        public/providers/test_provider.h
+        src/providers/test_provider.cpp
+        )
 
 target_include_directories(${PROJECT_NAME}
         PUBLIC
         $<INSTALL_INTERFACE:
         public
         public/util
+        public/providers
         public/controllers
         public/models>
 
         $<BUILD_INTERFACE:
         ${CMAKE_CURRENT_SOURCE_DIR}/public
+        ${CMAKE_CURRENT_SOURCE_DIR}/public/providers
         ${CMAKE_CURRENT_SOURCE_DIR}/public/util
         ${CMAKE_CURRENT_SOURCE_DIR}/public/controllers
         ${CMAKE_CURRENT_SOURCE_DIR}/public/models
@@ -54,6 +68,7 @@ target_include_directories(${PROJECT_NAME}
 
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/providers
         ${CMAKE_CURRENT_SOURCE_DIR}/src/controllers
         ${CMAKE_CURRENT_SOURCE_DIR}/src/models
         )

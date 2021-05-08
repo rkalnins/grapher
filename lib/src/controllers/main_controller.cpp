@@ -39,6 +39,39 @@ namespace grapher::controllers {
         qDebug() << "connected new model";
     }
 
+    DataProvidersModel *MainController::getProviders() {
+        return providers_;
+    }
+
+
+    void MainController::configureProviders() {
+        QJsonObject o = workspace_model_->getWorkspace()->getWorkspaceData();
+        QJsonArray providers = o["providers"].toArray();
+        providers_->populateProviders(providers);
+
+        qDebug() << "connecting handlers and channels " << data_model_->getHandlerCount();
+
+        for (int i = 0; i < data_model_->getHandlerCount(); ++i) {
+            DataHandler *handler = data_model_->getDataHandler(i);
+            const QString &id = handler->getId();
+            const QString &p = handler->getProvider();
+
+            qDebug() << "id: " << id << "  prov: " << p;
+
+            AbstractDataProviderModel *provider = providers_->getProviderByName(p);
+            if (provider) {
+                handler->setChannel(provider->getChannelById(id));
+                qDebug() << "connected handler to channel " << handler->getName() << " -> "
+                         << provider->getChannelById(id)->getName();
+            }
+        }
+    }
+
+
+    void MainController::setProvidersModel(models::DataProvidersModel &model) {
+        providers_ = &model;
+    }
+
     void MainController::setMenuModel(models::MenuModel &model) {
         if (menu_model_) {
             disconnect(menu_model_, &MenuModel::titleChanged, this, &MainController::handleTitleChanged);
@@ -91,7 +124,6 @@ namespace grapher::controllers {
         connect(workspace_model_, &WorkspaceModel::workspaceUpdated, this,
                 &MainController::pushSettingChange);
         connectSaveSignals();
-
     }
 
     MenuController *MainController::getMenuController() {
@@ -166,6 +198,7 @@ namespace grapher::controllers {
 
     void MainController::pushSettingChange(const QJsonObject &data) {
         data_model_->setDataFromJson(data);
+        configureProviders();
         qDebug() << "pushing setting change to mainWindow";
         emit dataChanged(data);
         qDebug() << "pushed setting change to mainWindow";

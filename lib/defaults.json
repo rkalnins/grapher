@@ -1,5 +1,25 @@
 {
   "name": "untitled-default-new",
+  "providers": [
+    {
+      "name": "test-1",
+      "type": "test",
+      "channels": [
+        {
+          "name": "test-src 1",
+          "id": "id-123456"
+        },
+        {
+          "name": "test-src 2",
+          "id": "id-54312"
+        },
+        {
+          "name": "test-src 3",
+          "id": "id-10000"
+        }
+      ]
+    }
+  ],
   "grapher": {
     "y-range-default": [
       -3,
@@ -12,6 +32,8 @@
       {
         "visible": true,
         "name": "a",
+        "id": "id-10000",
+        "provider": "test-1",
         "pen": [
           60,
           110,
@@ -21,6 +43,8 @@
       {
         "visible": true,
         "name": "b",
+        "id": "id-123456",
+        "provider": "test-1",
         "pen": [
           20,
           110,

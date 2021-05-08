@@ -6,6 +6,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QJsonObject>
 #include <QDebug>
 #include <QUrl>
 
@@ -17,6 +18,7 @@
 #include "data_controller.h"
 
 #include "data_model.h"
+#include "data_providers_model.h"
 
 #include "globals.h"
 
@@ -28,6 +30,8 @@ namespace grapher {
         class DataModel;
 
         class WorkspaceModel;
+
+        class DataProvidersModel;
     }
 
     namespace controllers {
@@ -40,6 +44,7 @@ namespace grapher {
             Q_PROPERTY(controllers::WorkspaceController *workspaceController READ getWorkspaceController CONSTANT)
             Q_PROPERTY(controllers::DataController *dataController READ getDataController CONSTANT)
             Q_PROPERTY(models::DataModel *dataModel READ getDataModel CONSTANT)
+            Q_PROPERTY(models::DataProvidersModel *providers READ getProviders CONSTANT)
 
         public:
             explicit MainController(QObject *parent = nullptr);
@@ -50,8 +55,9 @@ namespace grapher {
 
             DataController *getDataController();
 
-
             models::DataModel *getDataModel();
+
+            models::DataProvidersModel *getProviders();
 
             virtual ~MainController() = default;
 
@@ -61,9 +67,13 @@ namespace grapher {
 
             void setDataModel(models::DataModel &model);
 
+            void setProvidersModel(models::DataProvidersModel &model);
+
             void connectSaveSignals();
 
             void disconnectSaveSignals();
+
+            void configureProviders();
 
         Q_SIGNALS:
 
@@ -81,6 +91,7 @@ namespace grapher {
             models::MenuModel *menu_model_{nullptr};
             models::WorkspaceModel *workspace_model_{nullptr};
             models::DataModel *data_model_{nullptr};
+            models::DataProvidersModel *providers_{nullptr};
 
             QMetaObject::Connection workspace_created_connection_;
 

@@ -7,9 +7,10 @@
 #include <QObject>
 #include <QColor>
 
+#include "data_channel.h"
+
 #include "globals.h"
 
-#define HANDLER_PROVIDE_TEST_DATA
 
 namespace grapher {
 
@@ -39,10 +40,22 @@ namespace grapher {
 
         void setIsVisible(bool visibility);
 
+        void setChannel(DataChannel *channel);
+
+        DataChannel *getChannel() const;
+
+        const QString &getId() const;
+
+        const QString &getProvider() const;
+
     private:
-        double current_data_{0.0};
+
+        DataChannel *channel_;
+
 
         QString name_;
+        QString id_;
+        QString provider_;
         QColor pen_color_{QColor::Spec::Rgb};
         bool visible_;
 

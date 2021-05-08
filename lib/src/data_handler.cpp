@@ -7,7 +7,6 @@
 #include <QJsonArray>
 #include <QDebug>
 
-
 #include "data_handler.h"
 
 namespace grapher {
@@ -19,16 +18,17 @@ namespace grapher {
         pen_color_.setRed(pen_color[0].toInt());
         pen_color_.setGreen(pen_color[1].toInt());
         pen_color_.setBlue(pen_color[2].toInt());
+
+        id_ = data["id"].toString();
+        provider_ = data["provider"].toString();
+    }
+
+    const QString &DataHandler::getId() const {
+        return id_;
     }
 
     double DataHandler::get() const {
-#ifdef HANDLER_PROVIDE_TEST_DATA
-        static int test = 0;
-        ++test;
-        return qSin(test / pen_color_.blue()) + std::rand() / (double) RAND_MAX * 1 * qSin(test / 0.3843);
-#else
-        return current_data_;
-#endif
+        return channel_->get();
     }
 
     const QString &DataHandler::getName() const {
@@ -53,5 +53,17 @@ namespace grapher {
 
     void DataHandler::setIsVisible(bool visibility) {
         visible_ = visibility;
+    }
+
+    void DataHandler::setChannel(DataChannel *channel) {
+        channel_ = channel;
+    }
+
+    DataChannel *DataHandler::getChannel() const {
+        return channel_;
+    }
+
+    const QString &DataHandler::getProvider() const {
+        return provider_;
     }
 }

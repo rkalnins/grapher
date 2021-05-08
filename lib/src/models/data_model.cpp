@@ -16,6 +16,8 @@ namespace grapher::models {
         setHeaderData(0, Qt::Horizontal, tr("Name"));
         setHeaderData(1, Qt::Horizontal, tr("Color"));
         setHeaderData(2, Qt::Horizontal, tr("Visible"));
+        setHeaderData(2, Qt::Horizontal, tr("Channel Name"));
+        setHeaderData(2, Qt::Horizontal, tr("Channel ID"));
     }
 
     int DataModel::getHandlerCount() {
@@ -63,6 +65,12 @@ namespace grapher::models {
                 case 1:
                     // get background color instead
                     return QVariant();
+                case 2:
+                    return QVariant();
+                case 3:
+                    return data_handlers_[row]->getChannel()->getName();
+                case 4:
+                    return data_handlers_[row]->getChannel()->getIdentifier();
                 default:
                     return QVariant();
             }
@@ -129,6 +137,9 @@ namespace grapher::models {
             pen_array.push_back(QJsonValue(c.blue()));
             handler_data["pen"] = pen_array;
 
+            handler_data["id"] = handler->getId();
+            handler_data["provider"] = handler->getProvider();
+
             graphs_data.append(handler_data);
             qDebug() << graphs_data;
         }
@@ -169,6 +180,10 @@ namespace grapher::models {
                     return QString("Color");
                 case 2:
                     return QString("Visible");
+                case 3:
+                    return QString("Channel Name");
+                case 4:
+                    return QString("Channel ID");
 
             }
         }
@@ -181,6 +196,8 @@ namespace grapher::models {
             return Qt::ItemIsEnabled;
         } else if (index.column() == 2) {
             return QAbstractTableModel::flags(index) | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled;
+        } else if (index.column() > 2) {
+            return QAbstractTableModel::flags(index) | Qt::ItemIsEnabled;
         } else {
             return QAbstractTableModel::flags(index) | Qt::ItemIsEnabled | Qt::ItemIsEditable;
         }
@@ -204,6 +221,5 @@ namespace grapher::models {
 
         return QAbstractItemModel::setData(index, value, role);
     }
-
 
 }

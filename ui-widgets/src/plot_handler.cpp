@@ -75,6 +75,10 @@ void PlotHandler::start() {
         return;
     }
 
+    for (int i = 0; i < graph_count_; ++i) {
+        plot_->graph(i)->data()->clear();
+    }
+
     connect(&data_timer_, SIGNAL(timeout()), this, SLOT(dataSlot()));
 
     time_start_ = QTime::currentTime();
