@@ -10,6 +10,7 @@
     "min-replot": 0.002,
     "graphs": [
       {
+        "visible": true,
         "name": "a",
         "pen": [
           60,
@@ -18,6 +19,7 @@
         ]
       },
       {
+        "visible": true,
         "name": "b",
         "pen": [
           20,

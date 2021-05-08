@@ -7,19 +7,13 @@
 
 #include "config_table_view.h"
 
-#include "color_list_editor.h"
-
 
 ConfigTableView::ConfigTableView(QWidget *parent) : QTableView(parent) {
     connect(this, &QTableView::doubleClicked, this, &ConfigTableView::handleDoubleClick);
 }
 
 void ConfigTableView::setup(grapher::models::DataModel *model) {
-//    for (int i = 0; i < model->getHandlerCount(); ++i) {
-//        auto *editor = new ColorListEditor;
-//        editor->setHandler(model->getDataHandler(i));
-//        setIndexWidget(model->index(i, 1), editor);
-//    }
+    model_ = model;
 }
 
 void ConfigTableView::handleDoubleClick(QModelIndex index) {
@@ -32,4 +26,7 @@ void ConfigTableView::handleDoubleClick(QModelIndex index) {
             model()->setData(index, new_color, Qt::BackgroundRole);
         }
     }
+
+    qDebug() << "updating " << index.row();
+    emit settingsUpdated(index.row(), model_->getDataHandler(index.row()));
 }

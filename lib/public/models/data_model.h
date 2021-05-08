@@ -52,13 +52,19 @@ namespace grapher::models {
 
         Qt::ItemFlags flags(const QModelIndex &index) const override;
 
+    public Q_SLOTS:
+
+        void collectSaveGraphsData();
+
+    Q_SIGNALS:
+
+        void collectedGraphData(const QJsonArray &graphs);
+
     private:
 
         int getNameFromIndex(const QString &name) const;
 
         std::vector<std::unique_ptr<DataHandler>> data_handlers_;
-
-        QJsonObject data_;
 
         int column_count_ = 5;
 

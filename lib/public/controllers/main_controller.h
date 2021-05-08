@@ -61,6 +61,9 @@ namespace grapher {
 
             void setDataModel(models::DataModel &model);
 
+            void connectSaveSignals();
+
+            void disconnectSaveSignals();
 
         Q_SIGNALS:
 

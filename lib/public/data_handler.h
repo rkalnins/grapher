@@ -18,6 +18,7 @@ namespace grapher {
 
         Q_PROPERTY(QString name READ getName WRITE setName USER true)
         Q_PROPERTY(QColor penColor READ getPenColor WRITE setPenColor USER true)
+        Q_PROPERTY(bool visible READ isVisible WRITE setIsVisible USER true)
 
     public:
         explicit DataHandler(QObject *parent = nullptr) : QObject(parent) {}
@@ -34,11 +35,16 @@ namespace grapher {
 
         void setup(QJsonObject &data);
 
+        bool isVisible() const;
+
+        void setIsVisible(bool visibility);
+
     private:
         double current_data_{0.0};
 
         QString name_;
         QColor pen_color_{QColor::Spec::Rgb};
+        bool visible_;
 
     };
 

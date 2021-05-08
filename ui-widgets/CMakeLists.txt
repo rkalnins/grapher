@@ -8,7 +8,6 @@ add_executable(${PROJECT_NAME}
         src/main.cpp
         src/main_window.cpp
         src/plot_handler.cpp
-        src/color_list_editor.cpp
 
         src/config_table_view.cpp src/config_table_view.h)
 

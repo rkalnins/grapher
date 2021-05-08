@@ -48,6 +48,10 @@ namespace grapher::models {
     }
 
     void WorkspaceModel::newWorkspace() {
+        if (workspace_handler_) {
+            workspace_handler_->save();
+        }
+
         workspace_handler_ = std::make_unique<WorkspaceHandler>();
         workspace_handler_->load(QUrl("defaults.json"));
         emit workspaceCreated();
@@ -55,6 +59,10 @@ namespace grapher::models {
     }
 
     void WorkspaceModel::openWorkspace(const QUrl &url) {
+        if (workspace_handler_) {
+            workspace_handler_->save();
+        }
+
         workspace_handler_ = std::make_unique<WorkspaceHandler>();
         workspace_handler_->load(url);
         emit workspaceCreated();

@@ -3,7 +3,7 @@
     "graphs": [
       {
         "visible": true,
-        "name": "test-a",
+        "name": "test-c",
         "pen": [
           40,
           110,
@@ -12,7 +12,7 @@
       },
       {
         "visible": true,
-        "name": "awgfbs",
+        "name": "test-d",
         "pen": [
           255,
           110,
@@ -28,5 +28,5 @@
       2
     ]
   },
-  "name": "Test Workspace"
+  "name": "Test 1 Workspace"
 }

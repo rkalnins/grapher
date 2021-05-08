@@ -36,17 +36,20 @@ add_library(${PROJECT_NAME} SHARED
         public/data_handler.h
         public/globals.h
 
+        public/util/json_util.h
         )
 
 target_include_directories(${PROJECT_NAME}
         PUBLIC
         $<INSTALL_INTERFACE:
         public
+        public/util
         public/controllers
         public/models>
 
         $<BUILD_INTERFACE:
         ${CMAKE_CURRENT_SOURCE_DIR}/public
+        ${CMAKE_CURRENT_SOURCE_DIR}/public/util
         ${CMAKE_CURRENT_SOURCE_DIR}/public/controllers
         ${CMAKE_CURRENT_SOURCE_DIR}/public/models
         >

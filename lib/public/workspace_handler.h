@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QUrl>
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QDebug>
 #include <QPointer>
 
@@ -60,6 +61,8 @@ namespace grapher {
 
         void setWorkspaceData(const QJsonObject &data);
 
+        void saveWorkspaceGraphs(const QJsonArray &graphs);
+
     Q_SIGNALS:
 
         void workspaceUrlChanged();
@@ -75,6 +78,8 @@ namespace grapher {
         void isNewWorkspaceChanged();
 
         void needsSavingChanged();
+
+        void needSaveWorkspaceGraphs();
 
     private:
         FileHandler file_handler_;

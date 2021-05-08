@@ -45,4 +45,12 @@ namespace grapher {
     void DataHandler::setPenColor(const QColor &penColor) {
         pen_color_ = penColor;
     }
+
+    bool DataHandler::isVisible() const {
+        return visible_;
+    }
+
+    void DataHandler::setIsVisible(bool visibility) {
+        visible_ = visibility;
+    }
 }

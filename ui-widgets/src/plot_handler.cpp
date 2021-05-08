@@ -84,6 +84,14 @@ void PlotHandler::setupGraph(const QJsonObject &graph, int index) {
     qDebug() << "adding plot " << index;
     plot_->graph(index)->setPen(
             QPen(QColor(rgb[0].toInt(), rgb[1].toInt(), rgb[2].toInt())));
+    plot_->graph(index)->setVisible(graph["visible"].toBool());
+    plot_->graph(index)->setName(graph["name"].toString());
+}
+
+void PlotHandler::updateGraph(int idx, grapher::DataHandler *handler) {
+    plot_->graph(idx)->setPen(QPen(handler->getPenColor()));
+    plot_->graph(idx)->setVisible(handler->isVisible());
+    plot_->graph(idx)->setName(handler->getName());
 }
 
 void PlotHandler::dataSlot() {

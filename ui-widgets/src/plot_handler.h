@@ -9,6 +9,7 @@
 #include "qcustomplot.h"
 
 #include "data_provider.h"
+#include "data_handler.h"
 
 namespace Ui {
     class MainWindow;
@@ -56,6 +57,8 @@ public Q_SLOTS:
     void pause();
 
     void toggle();
+
+    void updateGraph(int idx, grapher::DataHandler *handler);
 
 
 };

@@ -31,6 +31,8 @@ MainWindow::MainWindow(MainController &main_controller, QWidget *parent) : QMain
 
     plot_handler_.setUI(ui_);
     plot_handler_.setProvider(main_controller_->getDataProvider());
+
+    connect(ui_->tableView, &ConfigTableView::settingsUpdated, &plot_handler_, &PlotHandler::updateGraph);
 }
 
 MainWindow::~MainWindow() noexcept {

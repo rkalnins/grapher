@@ -4,6 +4,8 @@
 
 #include "workspace_handler.h"
 
+#include "json_util.h"
+
 namespace grapher {
 
     WorkspaceHandler::WorkspaceHandler(QObject *parent) : QObject(parent) {
@@ -73,6 +75,9 @@ namespace grapher {
             return;
         }
 
+        emit needSaveWorkspaceGraphs();
+        qDebug() << "done saving new graph data " << data_;
+
         if (!file_handler_.save(QJsonDocument(data_).toJson())) {
             return;
         }
@@ -81,6 +86,11 @@ namespace grapher {
         setNeedsUpdating(false);
 
         qDebug() << "Done saving";
+    }
+
+    void WorkspaceHandler::saveWorkspaceGraphs(const QJsonArray &graphs) {
+        data_ = setValue(data_, "grapher/graphs", graphs);
+        qDebug() << "wrote graphs: " << getValue(data_, "grapher/graphs");
     }
 
     void WorkspaceHandler::setWorkspaceData(const QJsonObject &data) {

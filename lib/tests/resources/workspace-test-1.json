@@ -1,30 +1,32 @@
 {
-  "name": "Test 1 Workspace",
   "grapher": {
-    "y-range-default": [
-      -2,
-      2
-    ],
-    "x-default-span": 4,
-    "time-format": "%m:%s:%z",
-    "min-replot": 0.002,
     "graphs": [
       {
+        "visible": true,
         "name": "test-c",
         "pen": [
-          40,
-          110,
-          255
+          255,
+          29,
+          101
         ]
       },
       {
+        "visible": true,
         "name": "test-d",
         "pen": [
-          255,
-          110,
-          40
+          187,
+          235,
+          255
         ]
       }
+    ],
+    "min-replot": 0.002,
+    "time-format": "%m:%s:%z",
+    "x-default-span": 4,
+    "y-range-default": [
+      -2,
+      2
     ]
-  }
+  },
+  "name": "Test 1 Workspace"
 }

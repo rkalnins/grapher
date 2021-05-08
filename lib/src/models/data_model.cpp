@@ -15,6 +15,7 @@ namespace grapher::models {
         qDebug() << "table setup";
         setHeaderData(0, Qt::Horizontal, tr("Name"));
         setHeaderData(1, Qt::Horizontal, tr("Color"));
+        setHeaderData(2, Qt::Horizontal, tr("Visible"));
     }
 
     int DataModel::getHandlerCount() {
@@ -72,6 +73,17 @@ namespace grapher::models {
                 default:
                     return QVariant();
             }
+        } else if (role == Qt::CheckStateRole) {
+            switch (col) {
+                case 2:
+                    if (data_handlers_[row]->isVisible()) {
+                        return Qt::Checked;
+                    } else {
+                        return Qt::Unchecked;
+                    }
+                default:
+                    return QVariant();
+            }
         }
 
         return QVariant();
@@ -100,6 +112,29 @@ namespace grapher::models {
         return getDataHandler(getNameFromIndex(name));
     }
 
+    void DataModel::collectSaveGraphsData() {
+        QJsonArray graphs_data;
+
+        for (auto &handler : data_handlers_) {
+            QJsonObject handler_data;
+            QJsonArray pen_array;
+
+            handler_data["name"] = handler->getName();
+
+            const QColor &c = handler->getPenColor();
+
+            pen_array.push_back(QJsonValue(c.red()));
+            pen_array.push_back(QJsonValue(c.green()));
+            pen_array.push_back(QJsonValue(c.blue()));
+            handler_data["pen"] = pen_array;
+
+            graphs_data.append(handler_data);
+            qDebug() << graphs_data;
+        }
+
+        emit collectedGraphData(graphs_data);
+    }
+
     std::vector<double> DataModel::getStreamData() {
         std::vector<double> data;
         data.reserve(data_handlers_.size());
@@ -113,9 +148,9 @@ namespace grapher::models {
     void DataModel::setDataFromJson(const QJsonObject &data) {
         data_handlers_.erase(data_handlers_.begin(), data_handlers_.end());
         data_handlers_.clear();
-        data_ = data["grapher"].toObject();
+        QJsonObject grapher_data = data["grapher"].toObject();
 
-        QJsonArray graphs = data_["graphs"].toArray();
+        QJsonArray graphs = grapher_data["graphs"].toArray();
         qDebug() << "setting data model data";
 
         int i = 0;
@@ -137,6 +172,8 @@ namespace grapher::models {
                     return QString("Name");
                 case 1:
                     return QString("Color");
+                case 2:
+                    return QString("Visible");
 
             }
         }
@@ -147,16 +184,28 @@ namespace grapher::models {
     Qt::ItemFlags DataModel::flags(const QModelIndex &index) const {
         if (index.column() == 1) {
             return Qt::ItemIsEnabled;
+        } else if (index.column() == 2) {
+            return QAbstractTableModel::flags(index) | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled;
         } else {
-            return QAbstractTableModel::flags(index) | Qt::ItemIsEnabled;
+            return QAbstractTableModel::flags(index) | Qt::ItemIsEnabled | Qt::ItemIsEditable;
         }
+
     }
 
     bool DataModel::setData(const QModelIndex &index, const QVariant &value, int role) {
 
-        if (index.row() == 1) {
-            data_handlers_[index.row()]->setPenColor(qvariant_cast<QColor>(value));
+        if (role == Qt::CheckStateRole) {
+            if (index.column() == 2) {
+                data_handlers_[index.row()]->setIsVisible(value.toBool());
+            }
+        } else {
+            if (index.column() == 1) {
+                data_handlers_[index.row()]->setPenColor(qvariant_cast<QColor>(value));
+            } else if (index.column() == 0) {
+                data_handlers_[index.row()]->setName(value.toString());
+            }
         }
+
 
         return QAbstractItemModel::setData(index, value, role);
     }

@@ -54,11 +54,34 @@ namespace grapher::controllers {
         qDebug() << "set data model";
     }
 
+    void MainController::connectSaveSignals() {
+        if (!data_model_ || !workspace_model_) {
+            return;
+        }
+
+        connect(data_model_, &DataModel::collectedGraphData, workspace_model_->getWorkspace(),
+                &WorkspaceHandler::saveWorkspaceGraphs);
+        connect(workspace_model_->getWorkspace(), &WorkspaceHandler::needSaveWorkspaceGraphs, data_model_,
+                &DataModel::collectSaveGraphsData);
+    }
+
+    void MainController::disconnectSaveSignals() {
+        if (!data_model_ || !workspace_model_) {
+            return;
+        }
+
+        disconnect(data_model_, &DataModel::collectedGraphData, workspace_model_->getWorkspace(),
+                   &WorkspaceHandler::saveWorkspaceGraphs);
+        disconnect(workspace_model_->getWorkspace(), &WorkspaceHandler::needSaveWorkspaceGraphs, data_model_,
+                   &DataModel::collectSaveGraphsData);
+    }
+
     void MainController::openWorkspace() {
         if (!workspace_model_) {
             return;
         }
 
+        disconnectSaveSignals();
         disconnect(workspace_model_, &WorkspaceModel::workspaceUpdated, this,
                    &MainController::pushSettingChange);
 
@@ -66,6 +89,8 @@ namespace grapher::controllers {
 
         connect(workspace_model_, &WorkspaceModel::workspaceUpdated, this,
                 &MainController::pushSettingChange);
+        connectSaveSignals();
+
     }
 
     MenuController *MainController::getMenuController() {

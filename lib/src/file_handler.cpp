@@ -77,7 +77,7 @@ namespace grapher {
 
         QFile file(path);
 
-        if (!file.open(QIODevice::WriteOnly)) {
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
             emit error((tr("Cannot save: ") + file.errorString()));
             return false;
         }
