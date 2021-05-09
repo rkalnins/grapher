@@ -121,11 +121,12 @@ void MainWindow::openWorkspace() {
     dialog.setFileMode(QFileDialog::ExistingFile);
     dialog.setViewMode(QFileDialog::Detail);
 
-
     if (dialog.exec()) {
         auto filenames = dialog.selectedUrls();
         if (!filenames.empty()) {
-            emit main_controller_->getMenuController()->openWorkspaceClicked(filenames[0]);
+            if (QFileInfo(filenames[0].toLocalFile()).suffix() == ".json") {
+                emit main_controller_->getMenuController()->openWorkspaceClicked(filenames[0]);
+            }
         }
     }
 }
@@ -143,8 +144,13 @@ void MainWindow::saveWorkspaceAs() {
     QFileDialog dialog(this);
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     dialog.setViewMode(QFileDialog::Detail);
+    dialog.setDefaultSuffix(".json");
 
-    auto filename = QFileDialog::getSaveFileUrl();
+
+    QString dir = QDir::homePath();
+    QString name = "workspace.json";
+
+    auto filename = QFileDialog::getSaveFileUrl(nullptr, tr("Save as"), dir + "/" + name, tr("JSON (*.json)"));
     if (!filename.isEmpty()) {
         emit main_controller_->getMenuController()->saveWorkspaceAsClicked(filename);
     }
@@ -154,8 +160,12 @@ void MainWindow::exportData() {
     QFileDialog dialog(this);
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     dialog.setViewMode(QFileDialog::Detail);
+    dialog.setDefaultSuffix(".csv");
 
-    auto filename = QFileDialog::getSaveFileUrl();
+    QString dir = QDir::homePath();
+    QString name = "data.csv";
+
+    auto filename = QFileDialog::getSaveFileUrl(nullptr, tr("Export"), dir + "/" + name, tr("CSV (*.csv)"));
     if (!filename.isEmpty()) {
         std::vector<QCPDataContainer<QCPGraphData> *> graph_data;
 
