@@ -33,6 +33,8 @@ namespace grapher::models {
 
         void reset();
 
+        bool setData(const QModelIndex &index, const QVariant &value, int role) override;
+
     private:
 
         QList<AbstractDataProviderModel *> providers_;

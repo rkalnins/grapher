@@ -66,7 +66,7 @@ namespace grapher::models {
 
         std::vector<std::unique_ptr<DataHandler>> data_handlers_;
 
-        int column_count_ = 5;
+        int column_count_ = 6;
 
     };
 }

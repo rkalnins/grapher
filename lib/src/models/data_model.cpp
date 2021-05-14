@@ -16,8 +16,9 @@ namespace grapher::models {
         setHeaderData(0, Qt::Horizontal, tr("Name"));
         setHeaderData(1, Qt::Horizontal, tr("Color"));
         setHeaderData(2, Qt::Horizontal, tr("Visible"));
-        setHeaderData(2, Qt::Horizontal, tr("Channel Name"));
-        setHeaderData(2, Qt::Horizontal, tr("Channel ID"));
+        setHeaderData(3, Qt::Horizontal, tr("Provider"));
+        setHeaderData(4, Qt::Horizontal, tr("Channel Name"));
+        setHeaderData(5, Qt::Horizontal, tr("Channel ID"));
     }
 
     int DataModel::getHandlerCount() {
@@ -68,8 +69,10 @@ namespace grapher::models {
                 case 2:
                     return QVariant();
                 case 3:
-                    return data_handlers_[row]->getChannel()->getName();
+                    return data_handlers_[row]->getProvider();
                 case 4:
+                    return data_handlers_[row]->getChannel()->getName();
+                case 5:
                     return data_handlers_[row]->getChannel()->getIdentifier();
                 default:
                     return QVariant();
@@ -181,10 +184,11 @@ namespace grapher::models {
                 case 2:
                     return QString("Visible");
                 case 3:
-                    return QString("Channel Name");
+                    return QString("Provider");
                 case 4:
+                    return QString("Channel Name");
+                case 5:
                     return QString("Channel ID");
-
             }
         }
 

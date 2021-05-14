@@ -36,6 +36,10 @@ namespace grapher::models {
         return providers_.size();
     }
 
+    bool DataProvidersModel::setData(const QModelIndex &index, const QVariant &value, int role) {
+        return QAbstractItemModel::setData(index, value, role);
+    }
+
     QVariant DataProvidersModel::data(const QModelIndex &index, int role) const {
         if (role == Qt::DisplayRole) {
             return providers_.at(index.row())->getName();
