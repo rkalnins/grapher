@@ -8,13 +8,14 @@
 #include "menu_model.h"
 #include "data_model.h"
 
+
 using grapher::controllers::MainController;
 using grapher::models::DataProvidersModel;
 using grapher::models::MenuModel;
 using grapher::models::DataModel;
 using grapher::models::WorkspaceModel;
 
-int main(int argc, char *argv[]) {
+int main ( int argc, char *argv[] ) {
     QApplication a(argc, argv);
 
     MainController main_controller;

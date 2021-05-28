@@ -24,98 +24,107 @@
 
 
 namespace grapher {
-    namespace models {
-        class MenuModel;
-
-        class DataModel;
-
-        class WorkspaceModel;
-
-        class DataProvidersModel;
-    }
-
-    namespace controllers {
-        class GRAPHER_EXPORT MainController : public QObject {
-        Q_OBJECT
-
-            Q_DISABLE_COPY_MOVE(MainController)
-
-            Q_PROPERTY(controllers::MenuController *menuController READ getMenuController CONSTANT)
-            Q_PROPERTY(controllers::WorkspaceController *workspaceController READ getWorkspaceController CONSTANT)
-            Q_PROPERTY(controllers::DataController *dataController READ getDataController CONSTANT)
-            Q_PROPERTY(models::DataModel *dataModel READ getDataModel CONSTANT)
-            Q_PROPERTY(models::DataProvidersModel *providers READ getProviders CONSTANT)
-
-        public:
-            explicit MainController(QObject *parent = nullptr);
-
-            MenuController *getMenuController();
-
-            WorkspaceController *getWorkspaceController();
-
-            DataController *getDataController();
-
-            models::DataModel *getDataModel();
-
-            models::DataProvidersModel *getProviders();
-
-            virtual ~MainController() = default;
-
-            void setWorkspaceModel(models::WorkspaceModel &model);
-
-            void setMenuModel(models::MenuModel &model);
-
-            void setDataModel(models::DataModel &model);
-
-            void setProvidersModel(models::DataProvidersModel &model);
-
-            void connectSaveSignals();
-
-            void disconnectSaveSignals();
-
-            void configureProviders();
-
-        Q_SIGNALS:
-
-            void titleChanged(const QString &new_title);
-
-            void dataChanged(const QJsonObject &data);
-
-        private:
-            MenuController menu_controller_;
-            WorkspaceController workspace_controller_;
-            DataController data_controller_;
-
-            GraphDataCsvHandler export_handler_;
-
-            models::MenuModel *menu_model_{nullptr};
-            models::WorkspaceModel *workspace_model_{nullptr};
-            models::DataModel *data_model_{nullptr};
-            models::DataProvidersModel *providers_{nullptr};
-
-            QMetaObject::Connection workspace_created_connection_;
+namespace models {
+class MenuModel;
 
 
-        private Q_SLOTS:
+class DataModel;
 
-            void openWorkspace();
 
-            void handleCsvExport(const QUrl &url, std::vector<QCPDataContainer<QCPGraphData> *> &data);
+class WorkspaceModel;
 
-            void handleNewWorkspaceClicked();
 
-            void handleSaveWorkspaceClicked();
+class DataProvidersModel;
+}
 
-            void handleSaveWorkspaceAsClicked(const QUrl &url);
+namespace controllers {
+class GRAPHER_EXPORT MainController : public QObject {
+  Q_OBJECT
 
-            void handleOpenWorkspaceClicked(const QUrl &url);
+    Q_DISABLE_COPY_MOVE(MainController)
 
-            void handleSettingChange(const QJsonObject &data);
+    Q_PROPERTY(
+            controllers::MenuController         *menuController READ getMenuController CONSTANT)
+    Q_PROPERTY(
+            controllers::WorkspaceController    *workspaceController READ getWorkspaceController CONSTANT)
+    Q_PROPERTY(
+            controllers::DataController         *dataController READ getDataController CONSTANT)
+    Q_PROPERTY(
+            models::DataModel                   *dataModel READ getDataModel CONSTANT)
+    Q_PROPERTY(
+            models::DataProvidersModel          *providers READ getProviders CONSTANT)
 
-            void pushSettingChange(const QJsonObject &data);
+  public:
+    explicit MainController ( QObject *parent = nullptr );
 
-            void handleTitleChanged();
+    MenuController *getMenuController ();
 
-        };
-    }
+    WorkspaceController *getWorkspaceController ();
+
+    DataController *getDataController ();
+
+    models::DataModel *getDataModel ();
+
+    models::DataProvidersModel *getProviders ();
+
+    virtual ~MainController () = default;
+
+    void setWorkspaceModel ( models::WorkspaceModel &model );
+
+    void setMenuModel ( models::MenuModel &model );
+
+    void setDataModel ( models::DataModel &model );
+
+    void setProvidersModel ( models::DataProvidersModel &model );
+
+    void connectSaveSignals ();
+
+    void disconnectSaveSignals ();
+
+    void configureProviders ();
+
+  Q_SIGNALS:
+
+    void titleChanged ( const QString &new_title );
+
+    void dataChanged ( const QJsonObject &data );
+
+  private:
+    MenuController      menu_controller_;
+    WorkspaceController workspace_controller_;
+    DataController      data_controller_;
+
+    GraphDataCsvHandler export_handler_;
+
+    models::MenuModel          *menu_model_ { nullptr };
+    models::WorkspaceModel     *workspace_model_ { nullptr };
+    models::DataModel          *data_model_ { nullptr };
+    models::DataProvidersModel *providers_ { nullptr };
+
+    QMetaObject::Connection workspace_created_connection_;
+
+
+  private Q_SLOTS:
+
+    void openWorkspace ();
+
+    void handleCsvExport ( const QUrl &url,
+                           std::vector< QCPDataContainer< QCPGraphData > * > &data );
+
+    void handleNewWorkspaceClicked ();
+
+    void handleSaveWorkspaceClicked ();
+
+    void handleSaveWorkspaceAsClicked ( const QUrl &url );
+
+    void handleOpenWorkspaceClicked ( const QUrl &url );
+
+    void handleSettingChange ( const QJsonObject &data );
+
+    void pushSettingChange ( const QJsonObject &data );
+
+    void handleTitleChanged ();
+
+};
+}
 }

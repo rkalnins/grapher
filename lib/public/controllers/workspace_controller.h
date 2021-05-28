@@ -8,25 +8,26 @@
 
 #include "globals.h"
 
+
 namespace grapher {
-    namespace models {
-        class WorkspaceModel;
-    }
+namespace models {
+class WorkspaceModel;
+}
 
-    namespace controllers {
-        class GRAPHER_EXPORT WorkspaceController : public QObject {
-        Q_OBJECT
+namespace controllers {
+class GRAPHER_EXPORT WorkspaceController : public QObject {
+  Q_OBJECT
 
-            Q_DISABLE_COPY_MOVE(WorkspaceController)
+    Q_DISABLE_COPY_MOVE(WorkspaceController)
 
-        public:
-            explicit WorkspaceController(QObject *parent = nullptr);
+  public:
+    explicit WorkspaceController ( QObject *parent = nullptr );
 
-            virtual ~WorkspaceController() = default;
+    virtual ~WorkspaceController () = default;
 
-        Q_SIGNALS:
+  Q_SIGNALS:
 
-            void settingUpdated(const QJsonObject &data);
-        };
-    }
+    void settingUpdated ( const QJsonObject &data );
+};
+}
 }

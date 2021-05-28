@@ -4,110 +4,111 @@
 
 #include "file_handler.h"
 
+
 namespace grapher {
 
-    FileHandler::FileHandler(QObject *parent) : QObject(parent) {}
+FileHandler::FileHandler ( QObject *parent ) : QObject(parent) {}
 
-    QString FileHandler::getFileName() const {
+QString FileHandler::getFileName () const {
 
-        const auto path = getLocalPath(file_url_);
-        const auto name = QFileInfo(path).fileName();
+    const auto path = getLocalPath(file_url_);
+    const auto name = QFileInfo(path).fileName();
 
-        if (name.isEmpty()) {
-            return QStringLiteral("untitled");
-        }
-
-        return name;
+    if ( name.isEmpty()) {
+        return QStringLiteral("untitled");
     }
 
-    QString FileHandler::getFileType() const {
-        return QFileInfo(getFileName()).suffix();
+    return name;
+}
+
+QString FileHandler::getFileType () const {
+    return QFileInfo(getFileName()).suffix();
+}
+
+QUrl FileHandler::getFileUrl () const {
+    return file_url_;
+}
+
+QByteArray FileHandler::getData () const {
+
+    const auto name = getLocalPath(file_url_);
+
+    if ( !QFile::exists(name)) {
+        qWarning() << "file does not exist: " << file_url_;
+        return QByteArray {};
     }
 
-    QUrl FileHandler::getFileUrl() const {
-        return file_url_;
+    QFile file(name);
+
+    if ( !file.open(QFile::ReadOnly)) {
+        qWarning() << "file cannot be opened: " << file_url_;
+        return QByteArray {};
     }
 
-    QByteArray FileHandler::getData() const {
+    return file.readAll();
+}
 
-        const auto name = getLocalPath(file_url_);
-
-        if (!QFile::exists(name)) {
-            qWarning() << "file does not exist: " << file_url_;
-            return QByteArray{};
-        }
-
-        QFile file(name);
-
-        if (!file.open(QFile::ReadOnly)) {
-            qWarning() << "file cannot be opened: " << file_url_;
-            return QByteArray{};
-        }
-
-        return file.readAll();
+void FileHandler::load ( const QUrl &file_url ) {
+    if ( file_url == file_url_ ) {
+        return;
     }
 
-    void FileHandler::load(const QUrl &file_url) {
-        if (file_url == file_url_) {
-            return;
-        }
+    file_url_ = file_url;
+    emit fileUrlChanged();
 
-        file_url_ = file_url;
-        emit fileUrlChanged();
+    const auto name = getLocalPath(file_url_);
 
-        const auto name = getLocalPath(file_url_);
-
-        if (!QFile::exists(name)) {
-            emit error(tr("File not found"));
-            return;
-        }
-
-        QFile file(name);
-        if (!file.open(QFile::ReadOnly)) {
-            emit error(tr("Failed to open file"));
-        }
-
-        emit fileOpened();
-
-        qDebug() << "File " << name << " opened";
+    if ( !QFile::exists(name)) {
+        emit error(tr("File not found"));
+        return;
     }
 
-    bool FileHandler::saveAs(const QUrl &file_url, const QByteArray &data) {
-        const auto path = getLocalPath(file_url);
+    QFile file(name);
+    if ( !file.open(QFile::ReadOnly)) {
+        emit error(tr("Failed to open file"));
+    }
 
-        QFile file(path);
+    emit fileOpened();
 
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            emit error((tr("Cannot save: ") + file.errorString()));
-            return false;
-        }
+    qDebug() << "File " << name << " opened";
+}
 
-        file.write(data);
+bool FileHandler::saveAs ( const QUrl &file_url, const QByteArray &data ) {
+    const auto path = getLocalPath(file_url);
 
-        if (file_url == file_url_) {
-            return true;
-        }
+    QFile file(path);
 
-        file_url_ = file_url;
-        emit fileUrlChanged();
+    if ( !file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        emit error(( tr("Cannot save: ") + file.errorString()));
+        return false;
+    }
 
-        qDebug() << "File " << file_url << " saved";
+    file.write(data);
 
-        file.close();
-
+    if ( file_url == file_url_ ) {
         return true;
     }
 
-    bool FileHandler::save(const QByteArray &data) {
-        return saveAs(file_url_, data);
+    file_url_ = file_url;
+    emit fileUrlChanged();
+
+    qDebug() << "File " << file_url << " saved";
+
+    file.close();
+
+    return true;
+}
+
+bool FileHandler::save ( const QByteArray &data ) {
+    return saveAs(file_url_, data);
+}
+
+QString FileHandler::getLocalPath ( const QUrl &file_url ) {
+    const auto path = file_url.toLocalFile();
+    if ( !path.isEmpty()) {
+        return path;
     }
 
-    QString FileHandler::getLocalPath(const QUrl &file_url) {
-        const auto path = file_url.toLocalFile();
-        if (!path.isEmpty()) {
-            return path;
-        }
-
-        return file_url.path();
-    }
+    return file_url.path();
+}
 }

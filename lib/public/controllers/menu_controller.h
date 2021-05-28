@@ -13,45 +13,46 @@
 
 
 namespace grapher {
-    namespace models {
-        class MenuModel;
-    }
+namespace models {
+class MenuModel;
+}
 
-    class WorkspaceHandler;
+class WorkspaceHandler;
 
-    namespace controllers {
+namespace controllers {
 
-        class GRAPHER_EXPORT MenuController : public QObject {
-        Q_OBJECT
+class GRAPHER_EXPORT MenuController : public QObject {
+  Q_OBJECT
 
-            Q_DISABLE_COPY_MOVE(MenuController)
+    Q_DISABLE_COPY_MOVE(MenuController)
 
-        public:
-            explicit MenuController(QObject *parent = nullptr);
+  public:
+    explicit MenuController ( QObject *parent = nullptr );
 
-            virtual ~MenuController() = default;
+    virtual ~MenuController () = default;
 
-            void setModel(models::MenuModel &model);
+    void setModel ( models::MenuModel &model );
 
-            void setWorkspace(WorkspaceHandler &handler);
+    void setWorkspace ( WorkspaceHandler &handler );
 
-        Q_SIGNALS:
+  Q_SIGNALS:
 
-            void newWorkspaceClicked();
+    void newWorkspaceClicked ();
 
-            void saveWorkspaceClicked();
+    void saveWorkspaceClicked ();
 
-            void saveWorkspaceAsClicked(const QUrl &url);
+    void saveWorkspaceAsClicked ( const QUrl &url );
 
-            void openWorkspaceClicked(const QUrl &url);
+    void openWorkspaceClicked ( const QUrl &url );
 
-            void exportDataClicked(const QUrl &url, std::vector<QCPDataContainer<QCPGraphData> *> &data);
+    void exportDataClicked ( const QUrl &url,
+                             std::vector< QCPDataContainer< QCPGraphData > * > &data );
 
-        private:
-            models::MenuModel *menu_model_{nullptr};
+  private:
+    models::MenuModel *menu_model_ { nullptr };
 
-        };
+};
 
-    }
+}
 
 }

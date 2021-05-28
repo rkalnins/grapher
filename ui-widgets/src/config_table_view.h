@@ -11,22 +11,22 @@
 
 
 class ConfigTableView : public QTableView {
-Q_OBJECT
+  Q_OBJECT
 
-public:
-    explicit ConfigTableView(QWidget *parent);
+  public:
+    explicit ConfigTableView ( QWidget *parent );
 
-    void setup(grapher::models::DataModel *model);
+    void setup ( grapher::models::DataModel *model );
 
-Q_SIGNALS:
+  Q_SIGNALS:
 
-    void settingsUpdated(int idx, grapher::DataHandler *handler);
+    void settingsUpdated ( int idx, grapher::DataHandler *handler );
 
-public Q_SLOTS:
+  public Q_SLOTS:
 
-    void handleDoubleClick(QModelIndex index);
+    void handleDoubleClick ( QModelIndex index );
 
-private:
+  private:
     grapher::models::DataModel *model_;
 };
 

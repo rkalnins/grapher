@@ -13,62 +13,63 @@
 
 #include "globals.h"
 
+
 namespace grapher {
 
-    class WorkspaceHandler;
+class WorkspaceHandler;
 
-    namespace models {
+namespace models {
 
-        class GRAPHER_EXPORT WorkspaceModel : public QStandardItemModel {
-        Q_OBJECT
+class GRAPHER_EXPORT WorkspaceModel : public QStandardItemModel {
+  Q_OBJECT
 
-            Q_DISABLE_COPY_MOVE(WorkspaceModel)
+    Q_DISABLE_COPY_MOVE(WorkspaceModel)
 
 
-        public:
+  public:
 
-            explicit WorkspaceModel(QObject *parent = nullptr);
+    explicit WorkspaceModel ( QObject *parent = nullptr );
 
-            WorkspaceHandler *getWorkspace() const;
+    WorkspaceHandler *getWorkspace () const;
 
-            QString getWorkspaceName() const;
+    QString getWorkspaceName () const;
 
-            QUrl getWorkspaceUrl() const;
+    QUrl getWorkspaceUrl () const;
 
-            bool isWorkspaceNew() const;
+    bool isWorkspaceNew () const;
 
-            bool needsUpdating() const;
+    bool needsUpdating () const;
 
-            bool needsSaving() const;
+    bool needsSaving () const;
 
-            void setNeedsUpdating();
+    void setNeedsUpdating ();
 
-            void save();
+    void save ();
 
-            void saveAs(const QUrl &file_url);
+    void saveAs ( const QUrl &file_url );
 
-            void setData(const QJsonObject &data);
+    void setData ( const QJsonObject &data );
 
-        public Q_SLOTS:
+  public Q_SLOTS:
 
-            void newWorkspace();
+    void newWorkspace ();
 
-            void openWorkspace(const QUrl &url);
+    void openWorkspace ( const QUrl &url );
 
-            void closeWorkspace();
+    void closeWorkspace ();
 
-            void notifyWorkspaceUpdated(const QJsonObject &data);
+    void notifyWorkspaceUpdated ( const QJsonObject &data );
 
-        Q_SIGNALS:
+  Q_SIGNALS:
 
-            void workspaceCreated();
+    void workspaceCreated ();
 
-            void workspaceUpdated(const QJsonObject &data);
+    void workspaceUpdated ( const QJsonObject &data );
 
-        private:
+  private:
 
-            std::unique_ptr<WorkspaceHandler> workspace_handler_;
+    std::unique_ptr< WorkspaceHandler > workspace_handler_;
 
-        };
-    }
+};
+}
 }

@@ -9,35 +9,37 @@
 
 #include "globals.h"
 
+
 namespace grapher {
 
-    class DataHandler;
+class DataHandler;
 
-    class GRAPHER_EXPORT DataChannel : public QObject {
-    Q_OBJECT
 
-    public:
-        explicit DataChannel(QJsonObject data, QObject *parent = nullptr);
+class GRAPHER_EXPORT DataChannel : public QObject {
+  Q_OBJECT
 
-        double get() const;
+  public:
+    explicit DataChannel ( QJsonObject data, QObject *parent = nullptr );
 
-        void set(double data);
+    double get () const;
 
-        const QString &getName() const;
+    void set ( double data );
 
-        void setHandler(DataHandler *handler);
+    const QString &getName () const;
 
-        const QString &getIdentifier() const;
+    void setHandler ( DataHandler *handler );
 
-    private:
-        double data_{};
+    const QString &getIdentifier () const;
 
-        DataHandler *handler_{nullptr};
+  private:
+    double data_ {};
 
-        QString identifier_;
+    DataHandler *handler_ { nullptr };
 
-        QString name_;
+    QString identifier_;
 
-        QMutex mutex_;
-    };
+    QString name_;
+
+    QMutex mutex_;
+};
 }

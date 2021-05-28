@@ -16,55 +16,58 @@
 #include "main_controller.h"
 #include "plot_handler.h"
 
+
 namespace Ui {
-    class MainWindow;
+class MainWindow;
 }
 
 using grapher::controllers::MainController;
 using grapher::controllers::MenuController;
 
+
 class MainWindow : public QMainWindow {
-Q_OBJECT
+  Q_OBJECT
 
-public:
-    explicit MainWindow(MainController &main_controller, QWidget *parent = nullptr);
+  public:
+    explicit MainWindow ( MainController &main_controller,
+                          QWidget *parent = nullptr );
 
-    ~MainWindow() noexcept override;
+    ~MainWindow () noexcept override;
 
-private:
-    void createActions();
+  private:
+    void createActions ();
 
-    void createMenus();
+    void createMenus ();
 
-    void openWorkspace();
+    void openWorkspace ();
 
-    void saveWorkspaceAs();
+    void saveWorkspaceAs ();
 
-    void saveWorkspace();
+    void saveWorkspace ();
 
-    void newWorkspace();
+    void newWorkspace ();
 
-    void exportData();
+    void exportData ();
 
-private slots:
+  private slots:
 
-    void updateTitle(const QString &title);
+    void updateTitle ( const QString &title );
 
-    void configure(const QJsonObject &data);
+    void configure ( const QJsonObject &data );
 
 
-private:
-    QMenu *menu_{nullptr};
+  private:
+    QMenu *menu_ { nullptr };
 
-    QAction *newws_action_{nullptr};
-    QAction *openws_action_{nullptr};
-    QAction *savews_action_{nullptr};
-    QAction *savewsas_action_{nullptr};
-    QAction *export_action_{nullptr};
+    QAction *newws_action_ { nullptr };
+    QAction *openws_action_ { nullptr };
+    QAction *savews_action_ { nullptr };
+    QAction *savewsas_action_ { nullptr };
+    QAction *export_action_ { nullptr };
 
-    QAction *toggle_capture_{nullptr};
+    QAction *toggle_capture_ { nullptr };
 
-private:
+  private:
 
     Ui::MainWindow *ui_;
 

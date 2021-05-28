@@ -15,51 +15,52 @@
 
 #include "globals.h"
 
+
 namespace grapher {
 
-    class GRAPHER_EXPORT FileHandler : public QObject {
-    Q_OBJECT
+class GRAPHER_EXPORT FileHandler : public QObject {
+  Q_OBJECT
 
-        Q_DISABLE_COPY_MOVE(FileHandler);
+    Q_DISABLE_COPY_MOVE(FileHandler);
 
-        Q_PROPERTY(QString fileName READ getFileName NOTIFY fileUrlChanged)
-        Q_PROPERTY(QString fileType READ getFileType NOTIFY fileUrlChanged)
-        Q_PROPERTY(QUrl fileUrl READ getFileUrl NOTIFY fileUrlChanged)
-        Q_PROPERTY(QByteArray data READ getData)
+    Q_PROPERTY(QString    fileName READ getFileName NOTIFY fileUrlChanged)
+    Q_PROPERTY(QString    fileType READ getFileType NOTIFY fileUrlChanged)
+    Q_PROPERTY(QUrl       fileUrl READ getFileUrl NOTIFY fileUrlChanged)
+    Q_PROPERTY(QByteArray data READ getData)
 
-    public:
-        explicit FileHandler(QObject *parent = nullptr);
+  public:
+    explicit FileHandler ( QObject *parent = nullptr );
 
-        QString getFileName() const;
+    QString getFileName () const;
 
-        QString getFileType() const;
+    QString getFileType () const;
 
-        QUrl getFileUrl() const;
+    QUrl getFileUrl () const;
 
-        QByteArray getData() const;
+    QByteArray getData () const;
 
 
-    public Q_SLOTS:
+  public Q_SLOTS:
 
-        void load(const QUrl &file_url);
+    void load ( const QUrl &file_url );
 
-        bool saveAs(const QUrl &file_url, const QByteArray &data);
+    bool saveAs ( const QUrl &file_url, const QByteArray &data );
 
-        bool save(const QByteArray &data);
+    bool save ( const QByteArray &data );
 
-    Q_SIGNALS:
+  Q_SIGNALS:
 
-        void fileUrlChanged();
+    void fileUrlChanged ();
 
-        void fileOpened();
+    void fileOpened ();
 
-        void error(const QString &message);
+    void error ( const QString &message );
 
-    private:
-        QUrl file_url_;
+  private:
+    QUrl file_url_;
 
-        static QString getLocalPath(const QUrl &file_url);
-    };
+    static QString getLocalPath ( const QUrl &file_url );
+};
 
 
 }

@@ -8,61 +8,63 @@
 
 namespace grapher::models {
 
-    MenuModel::MenuModel(QObject *parent) : QObject{parent} {}
+MenuModel::MenuModel ( QObject *parent ) : QObject { parent } {}
 
-    void MenuModel::setWorkspace(WorkspaceHandler &handler) {
-        if (workspace_handler_ == &handler) {
-            return;
-        }
-
-        if (workspace_handler_) {
-            disconnect(workspace_handler_.data(),
-                       &WorkspaceHandler::workspaceUrlChanged,
-                       this,
-                       &MenuModel::titleChanged);
-            disconnect(workspace_handler_.data(),
-                       &WorkspaceHandler::isNewWorkspaceChanged,
-                       this,
-                       &MenuModel::isNewWorkspaceChanged);
-        }
-
-        workspace_handler_ = &handler;
-        if (!workspace_handler_) {
-            return;
-        }
-
-        connect(workspace_handler_.data(),
-                &WorkspaceHandler::workspaceUrlChanged,
-                this,
-                &MenuModel::titleChanged);
-        connect(workspace_handler_.data(),
-                &WorkspaceHandler::isNewWorkspaceChanged,
-                this,
-                &MenuModel::isNewWorkspaceChanged);
-
-        emit titleChanged();
-        emit isNewWorkspaceChanged();
-
-        qDebug() << "set workspace to " << workspace_handler_->getWorkspaceName();
-
+void MenuModel::setWorkspace ( WorkspaceHandler &handler ) {
+    if ( workspace_handler_ == &handler ) {
+        return;
     }
 
-    QString MenuModel::getTitle() const {
-
-        if (!workspace_handler_) {
-            qDebug() << "No workspace handler";
-            return {};
-        }
-        return workspace_handler_->getWorkspaceName() + " - " +
-               QFileInfo(workspace_handler_->getWorkspaceUrl().path()).fileName();
+    if ( workspace_handler_ ) {
+        disconnect(workspace_handler_.data(),
+                   &WorkspaceHandler::workspaceUrlChanged,
+                   this,
+                   &MenuModel::titleChanged);
+        disconnect(workspace_handler_.data(),
+                   &WorkspaceHandler::isNewWorkspaceChanged,
+                   this,
+                   &MenuModel::isNewWorkspaceChanged);
     }
 
-    bool MenuModel::isNewWorkspace() const {
-        if (!workspace_handler_) {
-            return false;
-        }
-
-        return workspace_handler_->isNewWorkspace();
+    workspace_handler_ = &handler;
+    if ( !workspace_handler_ ) {
+        return;
     }
+
+    connect(workspace_handler_.data(),
+            &WorkspaceHandler::workspaceUrlChanged,
+            this,
+            &MenuModel::titleChanged);
+    connect(workspace_handler_.data(),
+            &WorkspaceHandler::isNewWorkspaceChanged,
+            this,
+            &MenuModel::isNewWorkspaceChanged);
+
+    emit titleChanged();
+    emit isNewWorkspaceChanged();
+
+    qDebug() << "set workspace to "
+             << workspace_handler_->getWorkspaceName();
+
+}
+
+QString MenuModel::getTitle () const {
+
+    if ( !workspace_handler_ ) {
+        qDebug() << "No workspace handler";
+        return {};
+    }
+    return workspace_handler_->getWorkspaceName() + " - " +
+           QFileInfo(
+                   workspace_handler_->getWorkspaceUrl().path()).fileName();
+}
+
+bool MenuModel::isNewWorkspace () const {
+    if ( !workspace_handler_ ) {
+        return false;
+    }
+
+    return workspace_handler_->isNewWorkspace();
+}
 
 }

@@ -13,31 +13,33 @@
 
 #include "globals.h"
 
+
 namespace grapher::providers {
 
-    class GRAPHER_EXPORT TestProvider : public models::AbstractDataProviderModel {
-    public:
-        TestProvider(QObject *parent = nullptr);
+class GRAPHER_EXPORT TestProvider
+        : public models::AbstractDataProviderModel {
+  public:
+    TestProvider ( QObject *parent = nullptr );
 
-        void populateChannels(QJsonArray channels) override;
+    void populateChannels ( QJsonArray channels ) override;
 
-        void start() override;
+    void start () override;
 
-        void setup(QJsonObject provider_data) override;
+    void setup ( QJsonObject provider_data ) override;
 
-    private:
+  private:
 
-        void push1();
+    void push1 ();
 
-        void push2();
+    void push2 ();
 
-        void push3();
+    void push3 ();
 
-        void push4();
+    void push4 ();
 
-    private:
-        QThread *source_{nullptr};
+  private:
+    QThread *source_ { nullptr };
 
-    };
+};
 
 }

@@ -7,6 +7,7 @@
 
 #include <QtCore/qglobal.h>
 
+
 #if defined(GRAPHER_LIBRARY)
 #define GRAPHER_EXPORT Q_DECL_EXPORT
 #else

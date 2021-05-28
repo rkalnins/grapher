@@ -13,19 +13,21 @@
 
 #include "globals.h"
 
+
 namespace grapher {
 
-    class GRAPHER_EXPORT GraphDataCsvHandler : public QObject {
-    Q_OBJECT
-    public:
-        explicit GraphDataCsvHandler(QObject *parent = nullptr);
+class GRAPHER_EXPORT GraphDataCsvHandler : public QObject {
+  Q_OBJECT
+  public:
+    explicit GraphDataCsvHandler ( QObject *parent = nullptr );
 
-    public Q_SLOTS:
+  public Q_SLOTS:
 
-        void exportTo(const QUrl &url, std::vector<QCPDataContainer<QCPGraphData> *> &data);
+    void exportTo ( const QUrl &url,
+                    std::vector< QCPDataContainer< QCPGraphData > * > &data );
 
-    private:
-        FileHandler file_handler_;
+  private:
+    FileHandler file_handler_;
 
-    };
+};
 }

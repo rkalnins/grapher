@@ -4,6 +4,8 @@
 
 #include "workspace_controller.h"
 
+
 namespace grapher::controllers {
-    WorkspaceController::WorkspaceController(QObject *parent) : QObject(parent) {}
+WorkspaceController::WorkspaceController ( QObject *parent ) : QObject(
+        parent) {}
 }

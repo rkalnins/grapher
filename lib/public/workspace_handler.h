@@ -15,83 +15,89 @@
 
 #include "globals.h"
 
+
 namespace grapher {
 
-    class GRAPHER_EXPORT WorkspaceHandler : public QObject {
-    Q_OBJECT
+class GRAPHER_EXPORT WorkspaceHandler : public QObject {
+  Q_OBJECT
 
-        Q_DISABLE_COPY_MOVE(WorkspaceHandler)
+    Q_DISABLE_COPY_MOVE(WorkspaceHandler)
 
-        Q_PROPERTY(QString workspaceName READ getWorkspaceName)
-        Q_PROPERTY(QUrl workspaceUrl READ getWorkspaceUrl NOTIFY workspaceUrlChanged)
-        Q_PROPERTY(QJsonObject workspaceData READ getWorkspaceData WRITE setWorkspaceData)
-        Q_PROPERTY(bool needsUpdating READ needsUpdating WRITE setNeedsUpdating NOTIFY needsUpdatingChanged)
-        Q_PROPERTY(bool needsSaving READ needsSaving WRITE setNeedsSaving NOTIFY needsSavingChanged)
-        Q_PROPERTY(bool isNewWorkspace READ isNewWorkspace WRITE setIsNewWorkspace NOTIFY isNewWorkspaceChanged)
+    Q_PROPERTY(QString     workspaceName READ getWorkspaceName)
+    Q_PROPERTY(
+            QUrl           workspaceUrl READ getWorkspaceUrl NOTIFY workspaceUrlChanged)
+    Q_PROPERTY(
+            QJsonObject    workspaceData READ getWorkspaceData WRITE setWorkspaceData)
+    Q_PROPERTY(
+            bool           needsUpdating READ needsUpdating WRITE setNeedsUpdating NOTIFY needsUpdatingChanged)
+    Q_PROPERTY(
+            bool           needsSaving READ needsSaving WRITE setNeedsSaving NOTIFY needsSavingChanged)
+    Q_PROPERTY(
+            bool           isNewWorkspace READ isNewWorkspace WRITE setIsNewWorkspace NOTIFY isNewWorkspaceChanged)
 
-    public:
-        explicit WorkspaceHandler(QObject *parent = nullptr);
+  public:
+    explicit WorkspaceHandler ( QObject *parent = nullptr );
 
 
-        QString getWorkspaceName() const;
+    QString getWorkspaceName () const;
 
-        QUrl getWorkspaceUrl() const;
+    QUrl getWorkspaceUrl () const;
 
-        QJsonObject getWorkspaceData() const;
+    QJsonObject getWorkspaceData () const;
 
-        bool needsUpdating() const;
+    bool needsUpdating () const;
 
-        void setNeedsUpdating(bool needs_updating);
+    void setNeedsUpdating ( bool needs_updating );
 
-        bool needsSaving() const;
+    bool needsSaving () const;
 
-        void setNeedsSaving(bool needs_saving);
+    void setNeedsSaving ( bool needs_saving );
 
-        bool isNewWorkspace() const;
+    bool isNewWorkspace () const;
 
-        void setIsNewWorkspace(bool is_new);
+    void setIsNewWorkspace ( bool is_new );
 
-    public Q_SLOTS:
+  public Q_SLOTS:
 
-        void load(const QUrl &url);
+    void load ( const QUrl &url );
 
-        void saveAs(const QUrl &url);
+    void saveAs ( const QUrl &url );
 
-        void save();
+    void save ();
 
-        void setWorkspaceData(const QJsonObject &data);
+    void setWorkspaceData ( const QJsonObject &data );
 
-        void saveWorkspaceGraphs(const QJsonArray &graphs);
+    void saveWorkspaceGraphs ( const QJsonArray &graphs );
 
-    Q_SIGNALS:
+  Q_SIGNALS:
 
-        void workspaceUrlChanged();
+    void workspaceUrlChanged ();
 
-        void workspaceOpened();
+    void workspaceOpened ();
 
-        void error(const QString &message);
+    void error ( const QString &message );
 
-        void workspaceUpdated(const QJsonObject &data);
+    void workspaceUpdated ( const QJsonObject &data );
 
-        void needsUpdatingChanged();
+    void needsUpdatingChanged ();
 
-        void isNewWorkspaceChanged();
+    void isNewWorkspaceChanged ();
 
-        void needsSavingChanged();
+    void needsSavingChanged ();
 
-        void needSaveWorkspaceGraphs();
+    void needSaveWorkspaceGraphs ();
 
-    private:
-        FileHandler file_handler_;
-        QJsonObject data_;
-        bool needs_updating_{false};
-        bool is_new_workspace_{true};
-        bool needs_saving_{false};
+  private:
+    FileHandler file_handler_;
+    QJsonObject data_;
+    bool        needs_updating_ { false };
+    bool        is_new_workspace_ { true };
+    bool        needs_saving_ { false };
 
-    private Q_SLOTS:
+  private Q_SLOTS:
 
-        void onWorkspaceOpened();
+    void onWorkspaceOpened ();
 
-    };
+};
 }
 Q_DECLARE_METATYPE(grapher::WorkspaceHandler *)

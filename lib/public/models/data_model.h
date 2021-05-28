@@ -15,58 +15,61 @@
 
 #include "globals.h"
 
+
 namespace grapher::models {
 
-    class GRAPHER_EXPORT DataModel : public QAbstractTableModel {
-    Q_OBJECT
+class GRAPHER_EXPORT DataModel : public QAbstractTableModel {
+  Q_OBJECT
 
-        Q_DISABLE_COPY_MOVE(DataModel)
+    Q_DISABLE_COPY_MOVE(DataModel)
 
-    public:
+  public:
 
-        explicit DataModel(QObject *parent = nullptr);
+    explicit DataModel ( QObject *parent = nullptr );
 
-        virtual ~DataModel() = default;
+    virtual ~DataModel () = default;
 
-        void setup();
+    void setup ();
 
-        int columnCount(const QModelIndex &parent) const override;
+    int columnCount ( const QModelIndex &parent ) const override;
 
-        int rowCount(const QModelIndex &parent) const override;
+    int rowCount ( const QModelIndex &parent ) const override;
 
-        QVariant data(const QModelIndex &index, int role) const override;
+    QVariant data ( const QModelIndex &index, int role ) const override;
 
-        bool setData(const QModelIndex &index, const QVariant &value, int role) override;
+    bool setData ( const QModelIndex &index, const QVariant &value,
+                   int role ) override;
 
-        QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+    QVariant headerData ( int section, Qt::Orientation orientation,
+                          int role ) const override;
 
-        DataHandler *getDataHandler(const QString &name) const;
+    DataHandler *getDataHandler ( const QString &name ) const;
 
-        DataHandler *getDataHandler(const int &idx) const;
+    DataHandler *getDataHandler ( const int &idx ) const;
 
-        double getStreamData(int idx);
+    double getStreamData ( int idx );
 
-        void setDataFromJson(const QJsonObject &data);
+    void setDataFromJson ( const QJsonObject &data );
 
-        int getHandlerCount();
+    int getHandlerCount ();
 
-        Qt::ItemFlags flags(const QModelIndex &index) const override;
+    Qt::ItemFlags flags ( const QModelIndex &index ) const override;
 
-    public Q_SLOTS:
+  public Q_SLOTS:
 
-        void collectSaveGraphsData();
+    void collectSaveGraphsData ();
 
-    Q_SIGNALS:
+  Q_SIGNALS:
 
-        void collectedGraphData(const QJsonArray &graphs);
+    void collectedGraphData ( const QJsonArray &graphs );
 
-    private:
+  private:
 
-        int getNameFromIndex(const QString &name) const;
+    int getNameFromIndex ( const QString &name ) const;
 
-        std::vector<std::unique_ptr<DataHandler>> data_handlers_;
+    std::vector< std::unique_ptr< DataHandler>> data_handlers_;
 
-        int column_count_ = 6;
+    int column_count_ = 6;
 
-    };
+};
 }

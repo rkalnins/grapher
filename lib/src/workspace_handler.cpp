@@ -6,143 +6,147 @@
 
 #include "json_util.h"
 
+
 namespace grapher {
 
-    WorkspaceHandler::WorkspaceHandler(QObject *parent) : QObject(parent) {
-        connect(&file_handler_, &FileHandler::fileUrlChanged, this, &WorkspaceHandler::workspaceUrlChanged);
-        connect(&file_handler_, &FileHandler::error, this, &WorkspaceHandler::error);
-        connect(&file_handler_, &FileHandler::fileOpened, this, &WorkspaceHandler::onWorkspaceOpened);
+WorkspaceHandler::WorkspaceHandler ( QObject *parent ) : QObject(parent) {
+    connect(&file_handler_, &FileHandler::fileUrlChanged, this,
+            &WorkspaceHandler::workspaceUrlChanged);
+    connect(&file_handler_, &FileHandler::error, this,
+            &WorkspaceHandler::error);
+    connect(&file_handler_, &FileHandler::fileOpened, this,
+            &WorkspaceHandler::onWorkspaceOpened);
+}
+
+QString WorkspaceHandler::getWorkspaceName () const {
+    return data_["name"].toString();
+}
+
+QUrl WorkspaceHandler::getWorkspaceUrl () const {
+    return file_handler_.getFileUrl();
+}
+
+QJsonObject WorkspaceHandler::getWorkspaceData () const {
+    return data_;
+}
+
+bool WorkspaceHandler::needsUpdating () const {
+    return needs_updating_;
+}
+
+void WorkspaceHandler::setNeedsUpdating ( bool needs_updating ) {
+    if ( needs_updating == needs_updating_ ) {
+        return;
     }
 
-    QString WorkspaceHandler::getWorkspaceName() const {
-        return data_["name"].toString();
+    if ( needs_updating ) {
+        setNeedsUpdating(true);
     }
 
-    QUrl WorkspaceHandler::getWorkspaceUrl() const {
-        return file_handler_.getFileUrl();
+    needs_updating_ = needs_updating;
+    emit needsUpdatingChanged();
+}
+
+bool WorkspaceHandler::needsSaving () const {
+    return needs_saving_;
+}
+
+bool WorkspaceHandler::isNewWorkspace () const {
+    return is_new_workspace_;
+}
+
+void WorkspaceHandler::load ( const QUrl &url ) {
+    file_handler_.load(url);
+
+    qDebug() << "Done loading";
+}
+
+void WorkspaceHandler::saveAs ( const QUrl &url ) {
+    if ( !file_handler_.saveAs(url, QJsonDocument(data_).toJson())) {
+        qDebug() << "Couldn't save to file";
+        return;
     }
 
-    QJsonObject WorkspaceHandler::getWorkspaceData() const {
-        return data_;
+    setIsNewWorkspace(false);
+    setNeedsSaving(false);
+    setNeedsUpdating(false);
+
+    qDebug() << "Done saving as" << url.toString();
+}
+
+void WorkspaceHandler::save () {
+    if ( is_new_workspace_ ) {
+        return;
     }
 
-    bool WorkspaceHandler::needsUpdating() const {
-        return needs_updating_;
+    emit needSaveWorkspaceGraphs();
+    qDebug() << "done saving new graph data " << data_;
+
+    if ( !file_handler_.save(QJsonDocument(data_).toJson())) {
+        return;
     }
 
-    void WorkspaceHandler::setNeedsUpdating(bool needs_updating) {
-        if (needs_updating == needs_updating_) {
-            return;
-        }
+    setNeedsSaving(false);
+    setNeedsUpdating(false);
 
-        if (needs_updating) {
-            setNeedsUpdating(true);
-        }
+    qDebug() << "Done saving";
+}
 
-        needs_updating_ = needs_updating;
-        emit needsUpdatingChanged();
+void WorkspaceHandler::saveWorkspaceGraphs ( const QJsonArray &graphs ) {
+    data_ = setValue(data_, "grapher/graphs", graphs);
+    qDebug() << "wrote graphs: " << getValue(data_, "grapher/graphs");
+}
+
+void WorkspaceHandler::setWorkspaceData ( const QJsonObject &data ) {
+    if ( !needs_updating_ ) {
+        return;
     }
 
-    bool WorkspaceHandler::needsSaving() const {
-        return needs_saving_;
+    data_ = data;
+    setNeedsUpdating(false);
+
+
+    qDebug() << "notifying workspace data";
+    emit workspaceUpdated(data_);
+    qDebug() << "notified workspace data";
+    qDebug() << QJsonDocument(data_).toJson(QJsonDocument::Compact);
+
+}
+
+void WorkspaceHandler::setIsNewWorkspace ( bool is_new ) {
+    if ( is_new_workspace_ == is_new ) {
+        return;
     }
 
-    bool WorkspaceHandler::isNewWorkspace() const {
-        return is_new_workspace_;
+    is_new_workspace_ = is_new;
+    emit isNewWorkspaceChanged();
+}
+
+void WorkspaceHandler::setNeedsSaving ( bool needs_saving ) {
+    if ( needs_saving_ == needs_saving ) {
+        return;
     }
 
-    void WorkspaceHandler::load(const QUrl &url) {
-        file_handler_.load(url);
+    needs_saving_ = needs_saving;
+    emit needsSavingChanged();
+}
 
-        qDebug() << "Done loading";
+void WorkspaceHandler::onWorkspaceOpened () {
+    needs_updating_ = true;
+
+    QJsonDocument doc = QJsonDocument::fromJson(file_handler_.getData());
+
+    if ( doc.isNull() || !doc.isObject()) {
+        qWarning() << "json data invalid";
+        return;
     }
 
-    void WorkspaceHandler::saveAs(const QUrl &url) {
-        if (!file_handler_.saveAs(url, QJsonDocument(data_).toJson())) {
-            qDebug() << "Couldn't save to file";
-            return;
-        }
-
-        setIsNewWorkspace(false);
-        setNeedsSaving(false);
-        setNeedsUpdating(false);
-
-        qDebug() << "Done saving as" << url.toString();
-    }
-
-    void WorkspaceHandler::save() {
-        if (is_new_workspace_) {
-            return;
-        }
-
-        emit needSaveWorkspaceGraphs();
-        qDebug() << "done saving new graph data " << data_;
-
-        if (!file_handler_.save(QJsonDocument(data_).toJson())) {
-            return;
-        }
-
-        setNeedsSaving(false);
-        setNeedsUpdating(false);
-
-        qDebug() << "Done saving";
-    }
-
-    void WorkspaceHandler::saveWorkspaceGraphs(const QJsonArray &graphs) {
-        data_ = setValue(data_, "grapher/graphs", graphs);
-        qDebug() << "wrote graphs: " << getValue(data_, "grapher/graphs");
-    }
-
-    void WorkspaceHandler::setWorkspaceData(const QJsonObject &data) {
-        if (!needs_updating_) {
-            return;
-        }
-
-        data_ = data;
-        setNeedsUpdating(false);
-
-
-        qDebug() << "notifying workspace data";
-        emit workspaceUpdated(data_);
-        qDebug() << "notified workspace data";
-        qDebug() << QJsonDocument(data_).toJson(QJsonDocument::Compact);
-
-    }
-
-    void WorkspaceHandler::setIsNewWorkspace(bool is_new) {
-        if (is_new_workspace_ == is_new) {
-            return;
-        }
-
-        is_new_workspace_ = is_new;
-        emit isNewWorkspaceChanged();
-    }
-
-    void WorkspaceHandler::setNeedsSaving(bool needs_saving) {
-        if (needs_saving_ == needs_saving) {
-            return;
-        }
-
-        needs_saving_ = needs_saving;
-        emit needsSavingChanged();
-    }
-
-    void WorkspaceHandler::onWorkspaceOpened() {
-        needs_updating_ = true;
-
-        QJsonDocument doc = QJsonDocument::fromJson(file_handler_.getData());
-
-        if (doc.isNull() || !doc.isObject()) {
-            qWarning() << "json data invalid";
-            return;
-        }
-
-        setWorkspaceData(doc.object());
-        needs_updating_ = false;
-        setIsNewWorkspace(false);
-        emit workspaceOpened();
-        qDebug() << "done opening workspace";
-    }
+    setWorkspaceData(doc.object());
+    needs_updating_ = false;
+    setIsNewWorkspace(false);
+    emit workspaceOpened();
+    qDebug() << "done opening workspace";
+}
 
 
 }

@@ -9,40 +9,42 @@
 
 #include "globals.h"
 
+
 namespace grapher {
-    class WorkspaceHandler;
+class WorkspaceHandler;
 
-    namespace models {
+namespace models {
 
 
-        class GRAPHER_EXPORT MenuModel : public QObject {
-        Q_OBJECT
+class GRAPHER_EXPORT MenuModel : public QObject {
+  Q_OBJECT
 
-            Q_DISABLE_COPY_MOVE(MenuModel)
+    Q_DISABLE_COPY_MOVE(MenuModel)
 
-            Q_PROPERTY(QString title READ getTitle NOTIFY titleChanged)
-            Q_PROPERTY(bool isNewWorkspace READ isNewWorkspace NOTIFY isNewWorkspaceChanged)
+    Q_PROPERTY(QString title READ getTitle NOTIFY titleChanged)
+    Q_PROPERTY(
+            bool       isNewWorkspace READ isNewWorkspace NOTIFY isNewWorkspaceChanged)
 
-        public:
+  public:
 
-            explicit MenuModel(QObject *parent = nullptr);
+    explicit MenuModel ( QObject *parent = nullptr );
 
-            virtual ~MenuModel() = default;
+    virtual ~MenuModel () = default;
 
-            void setWorkspace(WorkspaceHandler &handler);
+    void setWorkspace ( WorkspaceHandler &handler );
 
-            QString getTitle() const;
+    QString getTitle () const;
 
-            bool isNewWorkspace() const;
+    bool isNewWorkspace () const;
 
-        Q_SIGNALS:
+  Q_SIGNALS:
 
-            void titleChanged();
+    void titleChanged ();
 
-            void isNewWorkspaceChanged();
+    void isNewWorkspaceChanged ();
 
-        private:
-            QPointer<WorkspaceHandler> workspace_handler_;
-        };
-    }
+  private:
+    QPointer< WorkspaceHandler > workspace_handler_;
+};
+}
 }

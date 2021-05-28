@@ -8,18 +8,20 @@
 
 #include "globals.h"
 
+
 namespace grapher::controllers {
-    class GRAPHER_EXPORT DataController : public QObject {
-    Q_OBJECT
+class GRAPHER_EXPORT DataController : public QObject {
+  Q_OBJECT
 
-        Q_DISABLE_COPY_MOVE(DataController)
+    Q_DISABLE_COPY_MOVE(DataController)
 
-    public:
+  public:
 
-        explicit DataController(QObject *parent = nullptr) : QObject(parent) {}
+    explicit DataController ( QObject *parent = nullptr ) : QObject(
+            parent) {}
 
-        virtual ~DataController() = default;
+    virtual ~DataController () = default;
 
-    };
+};
 
 }
