@@ -8,7 +8,7 @@ logger = gl.get_logger('tcpsink', logging.DEBUG)
 
 
 class TCPClient(DataProvider):
-    def __init__(self, reader, writer):
+    def __init__(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         super().__init__()
         self.reader = reader
         self.writer = writer
@@ -30,7 +30,7 @@ class TCPClient(DataProvider):
 
 
 class TCPSink():
-    def __init__(self, host, port):
+    def __init__(self, host: str, port: int):
         self.host = host
         self.port = port
         self.clients = list()
