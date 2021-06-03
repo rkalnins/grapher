@@ -22,7 +22,8 @@ class TCPClient(DataProvider):
             tmp_data = (await self.reader.read(12))  # TODO: define protocol and configure msg size
 
             if tmp_data:
-                logger.debug('%s', tmp_data.decode())
+                self.data = float(tmp_data.decode())
+                logger.debug("%s", self.data)
 
             await self.writer.drain()
 
@@ -38,7 +39,7 @@ class TCPSink():
 
     def start(self):
         logger.debug('Starting TCP/IP Sink')
-        asyncio.run(self.run_server())
+        asyncio.ensure_future(self.run_server())
 
     def close(self):
         [c.stop() for c in self.clients]
