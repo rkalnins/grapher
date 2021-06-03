@@ -1,5 +1,7 @@
-import asyncio
 import logging
+import selectors
+import socket
+import types
 
 import grapher.util.grapher_logging as gl
 from grapher.sinks.DataProvider import DataProvider
@@ -7,51 +9,46 @@ from grapher.sinks.DataProvider import DataProvider
 logger = gl.get_logger('tcpsink', logging.DEBUG)
 
 
-class TCPClient(DataProvider):
-    def __init__(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
-        super().__init__()
-        self.reader = reader
-        self.writer = writer
-        self.running = True
-
-    def stop(self):
-        self.running = False
-
-    async def run(self):
-        while self.running:
-            tmp_data = (await self.reader.read(12))  # TODO: define protocol and configure msg size
-
-            if tmp_data:
-                self.data = float(tmp_data.decode())
-                logger.debug("%s", self.data)
-
-            await self.writer.drain()
-
-        self.writer.close()
-
-
-class TCPSink():
+class TCPSink(DataProvider):
     def __init__(self, host: str, port: int):
+        super().__init__()
         self.host = host
         self.port = port
-        self.clients = list()
-        self.client_index = 0
+        self.sel = selectors.DefaultSelector()
+
+    def accept_wrapper(self, sock):
+        conn, addr = sock.accept()  # Should be ready to read
+        logger.debug("accepted connection from %s", addr)
+        conn.setblocking(False)
+        data = types.SimpleNamespace(addr=addr, inb=b"", outb=b"")
+        events = selectors.EVENT_READ
+        self.sel.register(conn, events, data=data)
+
+    def service_connection(self, key, mask):
+        sock = key.fileobj
+        data = key.data
+        if mask & selectors.EVENT_READ:
+            recv_data = sock.recv(16)  # TODO: configure protocol
+            if recv_data:
+                self.data = float(recv_data)
+            else:
+                logger.debug("closing connection to %s", data.addr)
+                self.sel.unregister(sock)
+                sock.close()
 
     def start(self):
-        logger.debug('Starting TCP/IP Sink')
-        asyncio.ensure_future(self.run_server())
+        lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        lsock.bind((self.host, self.port))
+        lsock.listen()
+        logger.info("listening on %s:%s", self.host, self.port)
+        lsock.setblocking(False)
+        self.sel.register(lsock, selectors.EVENT_READ, data=None)
 
-    def close(self):
-        [c.stop() for c in self.clients]
-
-    async def handle_client(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
-        logger.info('Connected client')
-
-        c = TCPClient(reader, writer)
-        self.clients.append(c)
-        await c.run()
-
-    async def run_server(self):
-        server = await asyncio.start_server(self.handle_client, self.host, self.port)
-        async with server:
-            await server.serve_forever()
+    def run(self):
+        while True:
+            events = self.sel.select(timeout=None)
+            for key, mask in events:
+                if key.data is None:
+                    self.accept_wrapper(key.fileobj)
+                else:
+                    self.service_connection(key, mask)
