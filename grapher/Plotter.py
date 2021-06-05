@@ -1,5 +1,4 @@
 import logging
-import sys
 from threading import Thread, Lock
 
 import numpy as np
@@ -10,6 +9,16 @@ from grapher.sinks.DataProvider import DataPacket
 from sinks.tcp import TCPSink
 
 logger = gl.get_logger(__name__, logging.DEBUG)
+
+
+class Device:
+    def __init__(self, chunk_size, buffer_size):
+        self.curves = list()
+        self.data = np.zeros((chunk_size + 1, 2))
+        self.buffer = np.zeros((buffer_size + 1, 2))
+        self.ptr = 0
+        self.chunk_idx = 0
+        self.buffer_idx = 0
 
 
 class Plotter:
@@ -25,14 +34,7 @@ class Plotter:
         self.max_chunks = 10
         self.start_time = 0
 
-        self.curves = []
-        self.data = np.zeros((self.chunk_size + 1, 2))
-        self.buffer = np.zeros((self.buffer_size + 1, 2))
-        self.ptr = 0
-        self.chunk_idx = 0
-        self.buffer_idx = 0
-
-        self.flag = 0
+        self.devices = dict()
 
         self.timer = pg.QtCore.QTimer()
 
@@ -42,10 +44,17 @@ class Plotter:
 
     def post_data(self, msg: DataPacket):
         self.data_mtx.acquire()
-        logger.debug('%s %s %s %s', self.buffer_idx, msg.data, msg.timestamp, msg.timestamp - self.start_time)
-        self.buffer[self.buffer_idx, 0] = msg.timestamp - self.start_time
-        self.buffer[self.buffer_idx, 1] = msg.data
-        self.buffer_idx += 1
+
+        if msg.device_id not in self.devices:
+            self.devices[msg.device_id] = Device(self.chunk_size, self.buffer_size)
+            self.create_new_curve(self.devices[msg.device_id])
+
+        d = self.devices[msg.device_id]
+        logger.debug('%s %s %s %s', d.buffer_idx, msg.data, msg.timestamp, msg.timestamp - self.start_time)
+
+        d.buffer[d.buffer_idx, 0] = msg.timestamp - self.start_time
+        d.buffer[d.buffer_idx, 1] = msg.data
+        d.buffer_idx += 1
 
         self.data_mtx.release()
 
@@ -65,8 +74,6 @@ class Plotter:
         self.plot.setLabel('bottom', 'Time', 's')
         self.plot.setRange(xRange=[-10, 0], yRange=[-2, 50])
 
-        self.create_new_curve()
-
         self.timer.timeout.connect(self.update)
         self.timer.start(50)
 
@@ -76,67 +83,67 @@ class Plotter:
 
         pg.exec()
 
-    def create_new_curve(self):
-        logger.debug('New curve %s', self.chunk_idx)
+    def create_new_curve(self, device):
+        logger.debug('New curve %s', device.chunk_idx)
 
         curve = self.plot.plot()
-        self.curves.append(curve)
-        last = self.data[self.chunk_idx - 1]
+        device.curves.append(curve)
+        last = device.data[device.chunk_idx - 1]
 
-        self.chunk_idx = 0
-        self.ptr = 0
+        device.chunk_idx = 0
+        device.ptr = 0
 
-        self.data = np.zeros((self.chunk_size + 1, 2))
-        self.data[0] = last
+        device.data = np.zeros((self.chunk_size + 1, 2))
+        device.data[0] = last
 
-        logger.debug(last)
-        logger.debug(self.data[0])
-
-        while len(self.curves) > self.max_chunks:
-            c = self.curves.pop(0)
+        while len(device.curves) > self.max_chunks:
+            c = device.curves.pop(0)
             self.plot.removeItem(c)
 
         return curve
 
     def update(self):
         now = pg.ptime.time()
-        for c in self.curves:
-            c.setPos(-(now - self.start_time), 0)
+
+        for _, d in self.devices.items():
+            for c in d.curves:
+                c.setPos(-(now - self.start_time), 0)
 
         self.data_mtx.acquire()
 
-        self.chunk_idx = self.ptr % self.chunk_size
+        for _, d in self.devices.items():
+            d.chunk_idx = d.ptr % self.chunk_size
 
-        if self.chunk_idx == 0 or (self.chunk_idx * 1.25) > self.chunk_size:
-            curve = self.create_new_curve()
-        else:
-            curve = self.curves[-1]
+            if d.chunk_idx == 0 or (d.chunk_idx * 1.25) > self.chunk_size:
+                curve = self.create_new_curve(d)
+            else:
+                curve = d.curves[-1]
 
-        if self.buffer_idx == 0:
-            self.data[self.chunk_idx + 1, 0] = now - self.start_time
-            self.data[self.chunk_idx + 1, 1] = self.data[self.chunk_idx, 1]
+            if d.buffer_idx == 0:
+                d.data[d.chunk_idx + 1, 0] = now - self.start_time
+                d.data[d.chunk_idx + 1, 1] = d.data[d.chunk_idx, 1]
 
-            curve.setData(x=self.data[:self.chunk_idx + 1, 0],
-                          y=self.data[:self.chunk_idx + 1, 1])
+                curve.setData(x=d.data[:d.chunk_idx + 1, 0],
+                              y=d.data[:d.chunk_idx + 1, 1])
 
-            self.ptr += 1
+                d.ptr += 1
 
-        else:
-            logger.debug('new data %s', self.buffer_idx)
-            # set data with accumulated new data
-            start = self.chunk_idx + 1
-            end = start + self.buffer_idx
+            else:
+                logger.debug('new data %s', d.buffer_idx)
+                # set data with accumulated new data
+                start = d.chunk_idx + 1
+                end = start + d.buffer_idx
 
-            print(start, end, self.chunk_idx, self.buffer_idx)
+                print(start, end, d.chunk_idx, d.buffer_idx)
 
-            self.data[start:end] = self.buffer[:self.buffer_idx]
+                d.data[start:end] = d.buffer[:d.buffer_idx]
 
-            curve.setData(x=self.data[:end, 0],
-                          y=self.data[:end, 1])
+                curve.setData(x=d.data[:end, 0],
+                              y=d.data[:end, 1])
 
-            # reset buffer and counter
-            self.ptr += self.buffer_idx
-            self.buffer = np.zeros((self.buffer_size + 1, 2))
-            self.buffer_idx = 0
+                # reset buffer and counter
+                d.ptr += d.buffer_idx
+                d.buffer = np.zeros((self.buffer_size + 1, 2))
+                d.buffer_idx = 0
 
         self.data_mtx.release()
