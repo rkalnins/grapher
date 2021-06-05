@@ -102,6 +102,33 @@ class Plotter:
 
         return curve
 
+    def add_new_data(self, curve, device):
+        logger.debug('new data %s', device.buffer_idx)
+        # set data with accumulated new data
+        start = device.chunk_idx + 1
+        end = start + device.buffer_idx
+
+        print(start, end, device.chunk_idx, device.buffer_idx)
+
+        device.data[start:end] = device.buffer[:device.buffer_idx]
+
+        curve.setData(x=device.data[:end, 0],
+                      y=device.data[:end, 1])
+
+        # reset buffer and counter
+        device.ptr += device.buffer_idx
+        device.buffer = np.zeros((self.buffer_size + 1, 2))
+        device.buffer_idx = 0
+
+    def add_constant_data(self, now, curve, device):
+        device.data[device.chunk_idx + 1, 0] = now - self.start_time
+        device.data[device.chunk_idx + 1, 1] = device.data[device.chunk_idx, 1]
+
+        curve.setData(x=device.data[:device.chunk_idx + 1, 0],
+                      y=device.data[:device.chunk_idx + 1, 1])
+
+        device.ptr += 1
+
     def update(self):
         now = pg.ptime.time()
 
@@ -120,30 +147,8 @@ class Plotter:
                 curve = d.curves[-1]
 
             if d.buffer_idx == 0:
-                d.data[d.chunk_idx + 1, 0] = now - self.start_time
-                d.data[d.chunk_idx + 1, 1] = d.data[d.chunk_idx, 1]
-
-                curve.setData(x=d.data[:d.chunk_idx + 1, 0],
-                              y=d.data[:d.chunk_idx + 1, 1])
-
-                d.ptr += 1
-
+                self.add_constant_data(now, curve, d)
             else:
-                logger.debug('new data %s', d.buffer_idx)
-                # set data with accumulated new data
-                start = d.chunk_idx + 1
-                end = start + d.buffer_idx
-
-                print(start, end, d.chunk_idx, d.buffer_idx)
-
-                d.data[start:end] = d.buffer[:d.buffer_idx]
-
-                curve.setData(x=d.data[:end, 0],
-                              y=d.data[:end, 1])
-
-                # reset buffer and counter
-                d.ptr += d.buffer_idx
-                d.buffer = np.zeros((self.buffer_size + 1, 2))
-                d.buffer_idx = 0
+                self.add_new_data(curve, d)
 
         self.data_mtx.release()
