@@ -2,19 +2,21 @@ import logging
 import selectors
 import socket
 import types
+import struct
 
 import grapher.util.grapher_logging as gl
-from grapher.sinks.DataProvider import DataProvider
+from grapher.sinks.DataProvider import DataProvider, DataPacket
 
-logger = gl.get_logger('tcpsink', logging.DEBUG)
+logger = gl.get_logger(__name__, logging.DEBUG)
 
 
 class TCPSink(DataProvider):
-    def __init__(self, host: str, port: int):
+    def __init__(self, host: str, port: int, callback):
         super().__init__()
         self.host = host
         self.port = port
         self.sel = selectors.DefaultSelector()
+        self.post_data_callback = callback
 
     def accept_wrapper(self, sock):
         conn, addr = sock.accept()  # Should be ready to read
@@ -28,9 +30,23 @@ class TCPSink(DataProvider):
         sock = key.fileobj
         data = key.data
         if mask & selectors.EVENT_READ:
-            recv_data = sock.recv(16)  # TODO: configure protocol
+            recv_data = sock.recv(32)
             if recv_data:
-                self.data = float(recv_data)
+                # logger.debug(recv_data)
+
+                try:
+                    msg = struct.unpack('ilf', recv_data)
+                except struct.error:
+                    return
+
+                packet = DataPacket()
+
+                packet.device_id = msg[0]
+                packet.timestamp = msg[1] / 1000.0
+                packet.data = msg[2]
+
+                # logger.debug('%s, %s, %s', msg[0], msg[1], msg[2])
+                self.post_data_callback(packet)
             else:
                 logger.debug("closing connection to %s", data.addr)
                 self.sel.unregister(sock)
