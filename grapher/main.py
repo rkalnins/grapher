@@ -12,4 +12,5 @@ if __name__ == '__main__':
     plotter.init_io()
     logger.debug('exec')
     plotter.start()
+    plotter.close()
 

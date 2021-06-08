@@ -11,7 +11,6 @@ def get_logger(name, level):
     console_handler.setLevel(logging.DEBUG)
     console_handler.setFormatter(formatter)
 
-
     logger.addHandler(console_handler)
 
     return logger
