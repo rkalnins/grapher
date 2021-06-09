@@ -13,12 +13,14 @@ host = '127.0.0.1'
 
 client = mqtt.Client('test-' + str(sys.argv[1]))
 client.connect(host)
+client.loop_start()
 
 
 class DataPacket:
     source_id: int = 0
     timestamp = 0
     data: float = 0
+
 
 def mqtt_test():
     i = 0
@@ -39,10 +41,11 @@ def mqtt_test():
         else:
             print('sent ', packed)
 
-
+        i += 1
         time.sleep(0.5)
 
 
 if __name__ == '__main__':
     print('running')
     mqtt_test()
+
