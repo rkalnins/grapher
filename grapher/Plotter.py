@@ -9,11 +9,14 @@ from PyQt6.QtCore import QThread
 import grapher.util.grapher_logging as gl
 from grapher.sinks.DataProvider import DataPacket
 from sinks.tcp import TCPSink
+from sinks.mqtt import MqttSink
 
 logger = gl.get_logger(__name__, logging.DEBUG)
 
+TCP_SINK = 0
+MQTT_SINK = 1
 
-class Device:
+class Source:
     def __init__(self, chunk_size, buffer_size):
         self.curves = list()
         self.data = np.zeros((chunk_size + 1, 2))
@@ -39,25 +42,30 @@ class Plotter(PyQt6.QtCore.QObject):
         self.max_chunks = 10
         self.start_time = 0
 
-        self.devices = dict()
+        self.sources = dict()
 
         self.timer = pg.QtCore.QTimer()
+        self.sink_type = MQTT_SINK
 
-        self.tcp_sink = TCPSink('127.0.0.1', 8888, self.post_data)  # TODO: configuration
+        if self.sink_type == TCP_SINK:
+            self.tcp_sink = TCPSink('127.0.0.1', 8888, self.post_data)  # TODO: configuration
+        elif self.sink_type == MQTT_SINK:
+            self.mqtt_sink = MqttSink()
 
         logger.debug('done init')
 
     def init_io(self):
         logger.debug('Getting data')
-        self.tcp_sink.start()
-        self.tcp_thread = QThread()
-        self.tcp_sink.moveToThread(self.tcp_thread)
-        self.tcp_thread.started.connect(self.tcp_sink.run)
+        if self.sink_type == TCP_SINK:
+            self.tcp_sink.start()
+            self.tcp_thread = QThread()
+            self.tcp_sink.moveToThread(self.tcp_thread)
+            self.tcp_thread.started.connect(self.tcp_sink.run)
+        elif self.sink_type == MQTT_SINK:
+            self.mqtt_sink.connect()
 
     def start(self):
         logger.debug('starting')
-
-        self.tcp_sink.post_signal.connect(self.post_data)
 
         self.win = pg.GraphicsLayoutWidget(show=True)
         self.win.setWindowTitle('pyqtgraph example: Scrolling Plots')
@@ -69,7 +77,12 @@ class Plotter(PyQt6.QtCore.QObject):
         self.timer.timeout.connect(self.update)
         self.timer.start(50)
 
-        self.tcp_thread.start()
+        if self.sink_type == TCP_SINK:
+            self.tcp_sink.post_signal.connect(self.post_data)
+            self.tcp_thread.start()
+        elif self.sink_type == MQTT_SINK:
+            self.mqtt_sink.post_signal.connect(self.post_data)
+            self.mqtt_sink.start()
 
         logger.debug('done setup')
 
@@ -78,94 +91,92 @@ class Plotter(PyQt6.QtCore.QObject):
         pg.exec()
 
     def close(self):
-        self.tcp_sink.close()
+        if self.sink_type == TCP_SINK:
+            self.tcp_sink.close()
+        elif self.sink_type == MQTT_SINK:
+            pass
 
     @PyQt6.QtCore.pyqtSlot(DataPacket)
     def post_data(self, msg: DataPacket):
 
-        if msg.device_id not in self.devices:
-            self.devices[msg.device_id] = Device(self.chunk_size, self.buffer_size)
-            self.create_new_curve(self.devices[msg.device_id])
+        if msg.source_id not in self.sources:
+            self.sources[msg.source_id] = Source(self.chunk_size, self.buffer_size)
+            self.create_new_curve(self.sources[msg.source_id])
 
-        d = self.devices[msg.device_id]
-        logger.debug('%s %s %s %s', d.buffer_idx, msg.data, msg.timestamp, msg.timestamp - self.start_time)
+        s = self.sources[msg.source_id]
+        logger.debug('%s %s %s %s', s.buffer_idx, msg.data, msg.timestamp, msg.timestamp - self.start_time)
 
-        self.data_mtx.acquire()
-        d.buffer[d.buffer_idx, 0] = msg.timestamp - self.start_time
-        d.buffer[d.buffer_idx, 1] = msg.data
-        d.buffer_idx += 1
-        self.data_mtx.release()
+        with self.data_mtx:
+            s.buffer[s.buffer_idx, 0] = msg.timestamp - self.start_time
+            s.buffer[s.buffer_idx, 1] = msg.data
+            s.buffer_idx += 1
 
-    def create_new_curve(self, device: Device):
-        logger.debug('New curve %s', device.chunk_idx)
+    def create_new_curve(self, source: Source):
+        logger.debug('New curve %s', source.chunk_idx)
 
-        self.curve_mtx.acquire()
+        with self.curve_mtx:
+            curve = self.plot.plot(pen=source.rgb)
+            source.curves.append(curve)
+            last = source.data[source.chunk_idx - 1]
 
-        curve = self.plot.plot(pen=device.rgb)
-        device.curves.append(curve)
-        last = device.data[device.chunk_idx - 1]
+            source.chunk_idx = 0
+            source.ptr = 0
 
-        device.chunk_idx = 0
-        device.ptr = 0
+            source.data = np.zeros((self.chunk_size + 1, 2))
+            source.data[0] = last
 
-        device.data = np.zeros((self.chunk_size + 1, 2))
-        device.data[0] = last
-
-        while len(device.curves) > self.max_chunks:
-            c = device.curves.pop(0)
-            self.plot.removeItem(c)
-
-        self.curve_mtx.release()
+            while len(source.curves) > self.max_chunks:
+                c = source.curves.pop(0)
+                self.plot.removeItem(c)
 
         return curve
 
-    def add_new_data(self, curve: pg.plot, device: Device):
-        logger.debug('new data %s', device.buffer_idx)
+    def add_new_data(self, curve: pg.plot, source: Source):
+        logger.debug('new data %s', source.buffer_idx)
         # set data with accumulated new data
-        start = device.chunk_idx + 1
-        end = start + device.buffer_idx
+        start = source.chunk_idx + 1
+        end = start + source.buffer_idx
 
-        print(start, end, device.chunk_idx, device.buffer_idx)
+        print(start, end, source.chunk_idx, source.buffer_idx)
 
-        device.data[start:end] = device.buffer[:device.buffer_idx]
+        source.data[start:end] = source.buffer[:source.buffer_idx]
 
-        curve.setData(x=device.data[:end, 0],
-                      y=device.data[:end, 1])
+        curve.setData(x=source.data[:end, 0],
+                      y=source.data[:end, 1])
 
         # reset buffer and counter
-        device.ptr += device.buffer_idx
-        device.buffer = np.zeros((self.buffer_size + 1, 2))
-        device.buffer_idx = 0
+        source.ptr += source.buffer_idx
+        source.buffer = np.zeros((self.buffer_size + 1, 2))
+        source.buffer_idx = 0
 
-    def add_constant_data(self, now, curve, device: Device):
-        device.data[device.chunk_idx + 1, 0] = now - self.start_time
-        device.data[device.chunk_idx + 1, 1] = device.data[device.chunk_idx, 1]
+    def add_constant_data(self, now, curve, source: Source):
+        source.data[source.chunk_idx + 1, 0] = now - self.start_time
+        source.data[source.chunk_idx + 1, 1] = source.data[source.chunk_idx, 1]
 
-        curve.setData(x=device.data[:device.chunk_idx + 1, 0],
-                      y=device.data[:device.chunk_idx + 1, 1])
+        curve.setData(x=source.data[:source.chunk_idx + 1, 0],
+                      y=source.data[:source.chunk_idx + 1, 1])
 
-        device.ptr += 1
+        source.ptr += 1
 
     def update(self):
         now = pg.ptime.time()
 
-        for _, d in self.devices.items():
-            for c in d.curves:
+        for _, s in self.sources.items():
+            for c in s.curves:
                 c.setPos(-(now - self.start_time), 0)
 
-        self.data_mtx.acquire()
+        with self.data_mtx:
 
-        for _, d in self.devices.items():
-            d.chunk_idx = d.ptr % self.chunk_size
+            for _, s in self.sources.items():
+                s.chunk_idx = s.ptr % self.chunk_size
 
-            if d.chunk_idx == 0 or (d.chunk_idx * 1.25) > self.chunk_size:
-                curve = self.create_new_curve(d)
-            else:
-                curve = d.curves[-1]
+                if s.chunk_idx == 0 or (s.chunk_idx * 1.25) > self.chunk_size:
+                    curve = self.create_new_curve(s)
+                else:
+                    curve = s.curves[-1]
 
-            if d.buffer_idx == 0:
-                self.add_constant_data(now, curve, d)
-            else:
-                self.add_new_data(curve, d)
+                if s.buffer_idx == 0:
+                    self.add_constant_data(now, curve, s)
+                else:
+                    self.add_new_data(curve, s)
 
-        self.data_mtx.release()

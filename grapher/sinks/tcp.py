@@ -49,7 +49,7 @@ class TCPSink(DataProvider):
 
                 packet = DataPacket()
 
-                packet.device_id = msg[0]
+                packet.source_id = msg[0]
                 packet.timestamp = msg[1] / 1000.0
                 packet.data = msg[2]
 

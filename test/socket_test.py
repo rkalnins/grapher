@@ -5,7 +5,7 @@ import pyqtgraph as pg
 
 
 class DataPacket:
-    device_id: int = 0
+    source_id: int = 0
     timestamp = 0
     data: float = 0
 
@@ -17,12 +17,12 @@ async def tcp_test_client():
 
     while i < 400:
         data = DataPacket()
-        data.device_id = int(sys.argv[1])
+        data.source_id = int(sys.argv[1])
         data.data = i % int(sys.argv[2]) + 0.5
         data.timestamp = round(pg.ptime.time() * 1000)
         print(data.timestamp)
 
-        writer.write(struct.pack('ilf', data.device_id, data.timestamp, data.data))
+        writer.write(struct.pack('ilf', data.source_id, data.timestamp, data.data))
         await writer.drain()
         i += 1
 
