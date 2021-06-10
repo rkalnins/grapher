@@ -5,6 +5,7 @@ import PyQt6.QtCore
 import numpy as np
 import pyqtgraph as pg
 from PyQt6.QtCore import QThread
+from PyQt6.QtGui import QColor
 from pyqtgraph.parametertree import Parameter
 
 import grapher.util.grapher_logging as gl
@@ -14,35 +15,37 @@ from sinks.tcp import TCPSink
 
 logger = gl.get_logger(__name__, logging.DEBUG)
 
+CHUNK_SIZE = 300
+BUFFER_SIZE = 100
 
 class Source:
-    def __init__(self, chunk_size, buffer_size, color):
+    def __init__(self, color: QColor):
         self.curves = list()
-        self.data = np.zeros((chunk_size + 1, 2))
-        self.buffer = np.zeros((buffer_size + 1, 2))
+        self.data = np.zeros((CHUNK_SIZE + 1, 2))
+        self.buffer = np.zeros((BUFFER_SIZE + 1, 2))
         self.ptr = 0
         self.chunk_idx = 0
         self.buffer_idx = 0
-        h = color.lstrip('#')
-        self.rgb = tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+        self.rgb = color.getRgb()
         self.init = False
+        self.enabled = True
 
 
 class Plotter(PyQt6.QtCore.QObject):
     def __init__(self, ptree):
         super().__init__()
-        self.tcp_thread = None
-        self.data_mtx = Lock()
-        self.curve_mtx = Lock()
-
         self.plot = pg.PlotWidget(title="Plot")
         self.win = None
+
+        self.data_mtx = Lock()
+        self.curve_mtx = Lock()
 
         self.chunk_size = 300
         self.buffer_size = 100
         self.max_chunks = 10
         self.start_time = 0
 
+        self.tcp_thread = None
         self.tcp_sink = None
         self.mqtt_sink = None
         self.mqtt_enabled = False
@@ -55,37 +58,65 @@ class Plotter(PyQt6.QtCore.QObject):
 
         logger.debug('done init')
 
+    def reset(self, ptree):
+        self.data_mtx = Lock()
+        self.curve_mtx = Lock()
+
+        self.chunk_size = 300
+        self.buffer_size = 100
+        self.max_chunks = 10
+        self.start_time = 0
+
+        self.tcp_thread = None
+        self.tcp_sink = None
+        self.mqtt_sink = None
+        self.mqtt_enabled = False
+        self.tcp_enabled = False
+
+        self.sources = dict()
+        self.populate_sources(ptree)
+
+        self.timer = pg.QtCore.QTimer()
+
     def populate_sources(self, ptree: Parameter):
         sources = ptree.child('Sources')
-        for key, val in sources:
-            print(key, val)
-            src_type = key.split()[0]
+        for s in sources:
+            src_type = s.opts['name'].split()[0]
             if src_type == 'MQTT':
-                logger.debug('Adding MQTT source')
-                # support only one MQTT source right now
-                if not self.mqtt_enabled:
-                    self.mqtt_enabled = True
-                    topics = []
-
-                    for _, topic in val['topics']:
-                        self.sources[topic['ID']] = Source(self.chunk_size, self.buffer_size, topic['color'])
-                        topics.append(topic['path'])
-
-                    addr: str = val['host']
-                    parts = addr.split(':')
-
-                    self.mqtt_sink = MqttSink(parts[0], parts[1], topics)
+                self.add_mqtt_source(s)
             elif src_type == 'TCP':
-                logger.debug('Adding TCP source')
-                if not self.tcp_enabled:
-                    self.tcp_enabled = True
+                self.add_tcp_source(s)
 
-                    for _, topic in val['topics']:
-                        self.sources[topic['ID']] = Source(self.chunk_size, self.buffer_size, topic['color'])
+    def add_mqtt_source(self, s):
+        logger.debug('Adding MQTT source')
+        # support only one MQTT source right now
+        if not self.mqtt_enabled:
+            self.mqtt_enabled = True
+            topics = []
 
-                    addr: str = val['host']
-                    parts = addr.split(':')
-                    self.tcp_sink = TCPSink(parts[0], int(parts[1]), self.post_data)
+            for topic in s.child('topics'):
+                if len(topic['path']) > 0:
+                    self.sources[topic['ID']] = Source(self.chunk_size, self.buffer_size, topic['color'])
+                    topics.append(topic['path'])
+
+            addr: str = s['host']
+            parts = addr.split(':')
+
+            self.mqtt_sink = MqttSink(parts[0], int(parts[1]), topics)
+
+    def add_tcp_source(self, s):
+        logger.debug('Adding TCP source')
+
+        # support only one MQTT source right now
+        if not self.tcp_enabled:
+            self.tcp_enabled = True
+
+            for topic in s.child['topics']:
+                self.sources[topic['ID']] = Source(topic['color'])
+
+            addr: str = s['host']
+            parts = addr.split(':')
+            self.tcp_sink = TCPSink(parts[0], int(parts[1]), self.post_data)
 
     def init_io(self):
         logger.debug('Getting data')
@@ -123,13 +154,12 @@ class Plotter(PyQt6.QtCore.QObject):
         if self.tcp_enabled:
             self.tcp_sink.close()
         if self.mqtt_enabled:
-            pass
+            self.mqtt_sink.close()
 
     @PyQt6.QtCore.pyqtSlot(DataPacket)
     def post_data(self, msg: DataPacket):
 
-        if self.sources[msg.source_id].init:
-            self.sources[msg.source_id] = Source(self.chunk_size, self.buffer_size)
+        if not self.sources[msg.source_id].init:
             self.sources[msg.source_id].init = True
             self.create_new_curve(self.sources[msg.source_id])
 

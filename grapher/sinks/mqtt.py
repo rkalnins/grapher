@@ -34,7 +34,7 @@ class MqttSink(DataProvider):
     def start(self):
         self.client.loop_start()
 
-    def on_disconnect(self):
+    def on_disconnect(self, usrdata=None, rc=None):
         self.client.loop_stop()
 
     def close(self):

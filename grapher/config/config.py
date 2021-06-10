@@ -7,6 +7,7 @@ MAX_MQTT_TOPICS_PER_SOURCE = 10
 
 mqtt_topic_cfg = [
     {'name': 'ID', 'type': 'int', 'value': -1},
+    {'name': 'enabled', 'type': 'bool', 'value': False},
     {'name': 'path', 'type': 'str', 'value': ''},
     {'name': 'color', 'type': 'color', 'value': '#000FF0'},
 ]
