@@ -1,35 +1,35 @@
 import logging
-from threading import Thread, Lock
+from threading import Lock
 
 import PyQt6.QtCore
 import numpy as np
 import pyqtgraph as pg
 from PyQt6.QtCore import QThread
+from pyqtgraph.parametertree import Parameter
 
 import grapher.util.grapher_logging as gl
 from grapher.sinks.DataProvider import DataPacket
-from sinks.tcp import TCPSink
 from sinks.mqtt import MqttSink
+from sinks.tcp import TCPSink
 
 logger = gl.get_logger(__name__, logging.DEBUG)
 
-TCP_SINK = 0
-MQTT_SINK = 1
-
 
 class Source:
-    def __init__(self, chunk_size, buffer_size):
+    def __init__(self, chunk_size, buffer_size, color):
         self.curves = list()
         self.data = np.zeros((chunk_size + 1, 2))
         self.buffer = np.zeros((buffer_size + 1, 2))
         self.ptr = 0
         self.chunk_idx = 0
         self.buffer_idx = 0
-        self.rgb = (100, 120, 240)
+        h = color.lstrip('#')
+        self.rgb = tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+        self.init = False
 
 
 class Plotter(PyQt6.QtCore.QObject):
-    def __init__(self):
+    def __init__(self, ptree):
         super().__init__()
         self.tcp_thread = None
         self.data_mtx = Lock()
@@ -43,26 +43,59 @@ class Plotter(PyQt6.QtCore.QObject):
         self.max_chunks = 10
         self.start_time = 0
 
+        self.tcp_sink = None
+        self.mqtt_sink = None
+        self.mqtt_enabled = False
+        self.tcp_enabled = False
+
         self.sources = dict()
+        self.populate_sources(ptree)
 
         self.timer = pg.QtCore.QTimer()
-        self.sink_type = MQTT_SINK
-
-        if self.sink_type == TCP_SINK:
-            self.tcp_sink = TCPSink('127.0.0.1', 8888, self.post_data)  # TODO: configuration
-        elif self.sink_type == MQTT_SINK:
-            self.mqtt_sink = MqttSink()
 
         logger.debug('done init')
 
+    def populate_sources(self, ptree: Parameter):
+        sources = ptree.child('Sources')
+        for key, val in sources:
+            print(key, val)
+            src_type = key.split()[0]
+            if src_type == 'MQTT':
+                logger.debug('Adding MQTT source')
+                # support only one MQTT source right now
+                if not self.mqtt_enabled:
+                    self.mqtt_enabled = True
+                    topics = []
+
+                    for _, topic in val['topics']:
+                        self.sources[topic['ID']] = Source(self.chunk_size, self.buffer_size, topic['color'])
+                        topics.append(topic['path'])
+
+                    addr: str = val['host']
+                    parts = addr.split(':')
+
+                    self.mqtt_sink = MqttSink(parts[0], parts[1], topics)
+            elif src_type == 'TCP':
+                logger.debug('Adding TCP source')
+                if not self.tcp_enabled:
+                    self.tcp_enabled = True
+
+                    for _, topic in val['topics']:
+                        self.sources[topic['ID']] = Source(self.chunk_size, self.buffer_size, topic['color'])
+
+                    addr: str = val['host']
+                    parts = addr.split(':')
+                    self.tcp_sink = TCPSink(parts[0], int(parts[1]), self.post_data)
+
     def init_io(self):
         logger.debug('Getting data')
-        if self.sink_type == TCP_SINK:
+        if self.tcp_enabled:
             self.tcp_sink.start()
             self.tcp_thread = QThread()
             self.tcp_sink.moveToThread(self.tcp_thread)
             self.tcp_thread.started.connect(self.tcp_sink.run)
-        elif self.sink_type == MQTT_SINK:
+
+        if self.mqtt_enabled:
             self.mqtt_sink.connect()
 
     def start(self):
@@ -74,10 +107,11 @@ class Plotter(PyQt6.QtCore.QObject):
         self.timer.timeout.connect(self.update)
         self.timer.start(50)
 
-        if self.sink_type == TCP_SINK:
+        if self.tcp_enabled:
             self.tcp_sink.post_signal.connect(self.post_data)
             self.tcp_thread.start()
-        elif self.sink_type == MQTT_SINK:
+
+        if self.mqtt_enabled:
             self.mqtt_sink.post_signal.connect(self.post_data)
             self.mqtt_sink.start()
 
@@ -86,16 +120,17 @@ class Plotter(PyQt6.QtCore.QObject):
         self.start_time = pg.ptime.time()
 
     def close(self):
-        if self.sink_type == TCP_SINK:
+        if self.tcp_enabled:
             self.tcp_sink.close()
-        elif self.sink_type == MQTT_SINK:
+        if self.mqtt_enabled:
             pass
 
     @PyQt6.QtCore.pyqtSlot(DataPacket)
     def post_data(self, msg: DataPacket):
 
-        if msg.source_id not in self.sources:
+        if self.sources[msg.source_id].init:
             self.sources[msg.source_id] = Source(self.chunk_size, self.buffer_size)
+            self.sources[msg.source_id].init = True
             self.create_new_curve(self.sources[msg.source_id])
 
         s = self.sources[msg.source_id]

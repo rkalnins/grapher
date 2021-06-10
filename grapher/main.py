@@ -2,11 +2,11 @@ import logging
 
 import pyqtgraph as pg
 from PyQt6.QtWidgets import QMainWindow
-from pyqtgraph.Qt import QtGui
 from pyqtgraph.dockarea import *
 
 import grapher.util.grapher_logging as gl
 from grapher.Plotter import Plotter
+from grapher.config.config import ConfigurationHandler
 
 logger = gl.get_logger(__name__, logging.DEBUG)
 
@@ -25,17 +25,33 @@ dock_cfg = Dock("Config", size=(500, 200))
 area.addDock(dock_plot, 'left')
 area.addDock(dock_cfg, 'right', dock_plot)
 
+
+class App:
+    def __init__(self):
+        self.cfg = ConfigurationHandler()
+        self.cfg.parameters.sigTreeStateChanged.connect(self.reset)
+        self.plotter = None
+
+        self.reset()
+
+    def reset(self):
+        
+        self.plotter = Plotter(self.cfg.parameters)
+        self.plotter.populate_sources(self.cfg.parameters)
+        self.plotter.init_io()
+        self.plotter.start()
+
+
 if __name__ == '__main__':
     logger.info('Starting grapher app')
 
-    plotter = Plotter()
-    plotter.init_io()
-    plotter.start()
+    app = App()
 
-    dock_plot.addWidget(plotter.plot)
+    dock_plot.addWidget(app.plotter.plot)
+    dock_cfg.addWidget(app.cfg.tree)
 
     win.show()
     logger.debug('exec')
     pg.exec()
 
-    plotter.close()
+    app.plotter.close()
