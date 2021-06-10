@@ -16,6 +16,7 @@ logger = gl.get_logger(__name__, logging.DEBUG)
 TCP_SINK = 0
 MQTT_SINK = 1
 
+
 class Source:
     def __init__(self, chunk_size, buffer_size):
         self.curves = list()
@@ -34,7 +35,7 @@ class Plotter(PyQt6.QtCore.QObject):
         self.data_mtx = Lock()
         self.curve_mtx = Lock()
 
-        self.plot = None
+        self.plot = pg.PlotWidget(title="Plot")
         self.win = None
 
         self.chunk_size = 300
@@ -67,12 +68,8 @@ class Plotter(PyQt6.QtCore.QObject):
     def start(self):
         logger.debug('starting')
 
-        self.win = pg.GraphicsLayoutWidget(show=True)
-        self.win.setWindowTitle('pyqtgraph example: Scrolling Plots')
-
-        self.plot = self.win.addPlot(colspan=1)
         self.plot.setLabel('bottom', 'Time', 's')
-        self.plot.setRange(xRange=[-10, 0], yRange=[-2, 50])
+        self.plot.setRange(xRange=[-10, 0], yRange=[-2, 40])
 
         self.timer.timeout.connect(self.update)
         self.timer.start(50)
@@ -87,8 +84,6 @@ class Plotter(PyQt6.QtCore.QObject):
         logger.debug('done setup')
 
         self.start_time = pg.ptime.time()
-
-        pg.exec()
 
     def close(self):
         if self.sink_type == TCP_SINK:
@@ -179,4 +174,3 @@ class Plotter(PyQt6.QtCore.QObject):
                     self.add_constant_data(now, curve, s)
                 else:
                     self.add_new_data(curve, s)
-
