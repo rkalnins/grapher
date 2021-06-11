@@ -29,25 +29,14 @@ area.addDock(dock_cfg, 'right', dock_plot)
 class App:
     def __init__(self):
         self.cfg = ConfigurationHandler()
-        self.cfg.parameters.sigTreeStateChanged.connect(self.update_param)
 
-        self.plotter = Plotter(self.cfg.parameters)
-        self.plotter.init_io()
-        self.plotter.start()
-
-    def update_param(self, param, changes):
-        self.plotter.close()
-
-        for p, change, data in changes:
-            path = self.cfg.parameters.childPath(p)
-            print(path)
-
+        self.plotter = Plotter(self.cfg.parameters, self.cfg.channels)
         self.plotter.init_io()
         self.plotter.start()
 
     def reset(self):
         self.plotter.close()
-        self.plotter.reset(self.cfg.parameters)
+        self.plotter.reset(self.cfg.parameters, self.cfg.channels)
         self.plotter.init_io()
         self.plotter.start()
 

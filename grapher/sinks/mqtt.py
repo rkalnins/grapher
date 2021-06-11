@@ -19,7 +19,10 @@ class MqttSink(DataProvider):
         self.name = 'grapher'
         self.host = ''
         self.port = 0
-        self.client = None
+        self.client = mqtt.Client(self.name)
+        self.client.on_connect = self.on_connect
+        self.client.on_disconnect = self.on_disconnect
+        self.client.on_message = self.on_data
         self.topics = []
 
     def update_host(self, hostname, port):
@@ -35,10 +38,6 @@ class MqttSink(DataProvider):
                 self.client.subscribe(topic)
 
     def connect_client(self):
-        self.client = mqtt.Client(self.name)
-        self.client.on_connect = self.on_connect
-        self.client.on_disconnect = self.on_disconnect
-        self.client.on_message = self.on_data
         self.client.connect(self.host, port=self.port)  # port = 1883
         for topic in self.topics:
             self.client.subscribe(topic)

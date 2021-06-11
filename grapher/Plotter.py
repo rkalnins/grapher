@@ -6,7 +6,6 @@ import numpy as np
 import pyqtgraph as pg
 from PyQt6.QtCore import QThread
 from PyQt6.QtGui import QColor
-from pyqtgraph.parametertree import Parameter
 
 import grapher.util.grapher_logging as gl
 from grapher.sinks.DataProvider import DataPacket
@@ -20,16 +19,16 @@ BUFFER_SIZE = 100
 
 
 class Channel:
-    def __init__(self, color: QColor):
+    def __init__(self, color, enabled: bool):
         self.curves = list()
         self.data = np.zeros((CHUNK_SIZE + 1, 2))
         self.buffer = np.zeros((BUFFER_SIZE + 1, 2))
         self.ptr = 0
         self.chunk_idx = 0
         self.buffer_idx = 0
-        self.rgb = color.getRgb()
+        self.rgb = color
         self.init = False
-        self.enabled = True
+        self.enabled = enabled
 
     def update_enabled(self, val):
         self.enabled = val
@@ -42,7 +41,7 @@ class Channel:
 
 
 class Plotter(PyQt6.QtCore.QObject):
-    def __init__(self, ptree):
+    def __init__(self, plot_cfg, channels_cfg):
         super().__init__()
         self.plot = pg.PlotWidget(title="Plot")
         self.win = None
@@ -62,13 +61,13 @@ class Plotter(PyQt6.QtCore.QObject):
         self.tcp_enabled = False
 
         self.channels = dict()
-        self.populate_channels(ptree)
+        self.populate_channels(channels_cfg)
 
         self.timer = pg.QtCore.QTimer()
 
         logger.debug('done init')
 
-    def reset(self, ptree):
+    def reset(self, plot_cfg, channels_cfg):
         self.data_mtx = Lock()
         self.curve_mtx = Lock()
 
@@ -84,20 +83,20 @@ class Plotter(PyQt6.QtCore.QObject):
         self.tcp_enabled = False
 
         self.channels = dict()
-        self.populate_channels(ptree)
+        self.populate_channels(channels_cfg)
 
         self.timer = pg.QtCore.QTimer()
 
-    def populate_channels(self, ptree: Parameter):
-        sources = ptree.child('Sources')
-        for s in sources:
-            src_type = get_source_type(s)
-            if src_type == 'MQTT':
-                self.add_mqtt_source(s)
-            elif src_type == 'TCP':
-                self.add_tcp_source(s)
+    def populate_channels(self, channels_cfg: dict):
+        if 'MQTT' in channels_cfg:
+            if channels_cfg['MQTT']['enabled']:
+                self.add_mqtt_source(channels_cfg['MQTT'])
 
-    def add_mqtt_source(self, s):
+        if 'TCP' in channels_cfg:
+            if channels_cfg['TCP']['enabled']:
+                self.add_tcp_source(channels_cfg['TCP'])
+
+    def add_mqtt_source(self, s: dict):
         logger.debug('Adding MQTT source')
         # support only one MQTT source right now
         if not self.mqtt_enabled:
@@ -107,46 +106,41 @@ class Plotter(PyQt6.QtCore.QObject):
             self.update_mqtt_topics(s)
             self.update_mqtt_host(s)
 
-    def update_mqtt_host(self, s):
-        addr: str = s['host']
-        parts = addr.split(':')
+    def update_mqtt_host(self, s: dict):
 
-        if parts[0] != self.mqtt_sink.host or int(parts[1]) != self.mqtt_sink.port:
-            self.mqtt_sink.update_host(parts[0], int(parts[1]))
+        hostname = s['host']
+        port = s['port']
 
-    def update_mqtt_topics(self, s):
-        topics = self.update_channels_for_source(s)
+        if hostname != self.mqtt_sink.host or port != self.mqtt_sink.port:
+            self.mqtt_sink.update_host(hostname, port)
+
+    def update_mqtt_topics(self, s: dict):
+        topics = self.update_channels_for_source(s['channels'])
         self.mqtt_sink.update_topics(topics)
 
-    def update_channels_for_source(self, s):
+    def update_channels_for_source(self, channels: list):
         topics = []
 
-        for topic in s.child('channels'):
-            if len(topic['topic']) > 0 and topic['ID'] != -1:
-                logger.debug('Adding channel %d', topic['topic'])
-                self.channels[topic['ID']] = Channel(topic['color'])
-                self.channels[topic['ID']] = topic['ID']
+        for c in channels:
+            logger.debug('Adding channel %d', c['id'])
+            self.channels[c['id']] = Channel(c['color'], c['enabled'])
+            self.channels[c['id']].init = True
+            self.create_new_curve(self.channels[c['id']])
 
-                topic['color'].sigValueChanged.connect(self.channels[topic['ID']].update_color)
-                topic['enabled'].sigValueChanged.connect(self.channels[topic['ID']].update_enabled)
-
-                topics.append(topic['topic'])
+            if 'topic' in c:
+                topics.append(c['topic'])
 
         return topics
 
-    def add_tcp_source(self, s):
+    def add_tcp_source(self, s: dict):
         logger.debug('Adding TCP source')
 
         # support only one TCP source right now
         if not self.tcp_enabled:
             self.tcp_enabled = True
 
-            for topic in s.child['topics']:
-                self.channels[topic['ID']] = Channel(topic['color'])
-
-            addr: str = s['host']
-            parts = addr.split(':')
-            self.tcp_sink = TCPSink(parts[0], int(parts[1]), self.post_data)
+            self.update_channels_for_source(s['channels'])
+            self.tcp_sink = TCPSink(s['host'], s['port'], self.post_data)
 
     def init_io(self):
         logger.debug('Getting data')
@@ -188,11 +182,6 @@ class Plotter(PyQt6.QtCore.QObject):
 
     @PyQt6.QtCore.pyqtSlot(DataPacket)
     def post_data(self, msg: DataPacket):
-
-        if not self.channels[msg.source_id].init:
-            self.channels[msg.source_id].init = True
-            self.create_new_curve(self.channels[msg.source_id])
-
         s = self.channels[msg.source_id]
         logger.debug('%s %s %s %s', s.buffer_idx, msg.data, msg.timestamp, msg.timestamp - self.start_time)
 

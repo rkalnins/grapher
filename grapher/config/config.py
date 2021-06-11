@@ -2,87 +2,7 @@ import json
 import pickle
 
 import PyQt6.QtCore
-import pyqtgraph.parametertree.parameterTypes as pTypes
 from pyqtgraph.parametertree import ParameterTree, Parameter
-
-MAX_SOURCES = 10
-MAX_MQTT_TOPICS_PER_SOURCE = 10
-
-mqtt_topic_cfg = [
-    {'name': 'ID', 'type': 'int', 'value': -1},
-    {'name': 'enabled', 'type': 'bool', 'value': False},
-    {'name': 'topic', 'type': 'str', 'value': ''},
-    {'name': 'color', 'type': 'color', 'value': '#000FF0'},
-]
-
-tcp_topic_cfg = [
-    {'name': 'ID', 'type': 'int', 'value': -1},
-    {'name': 'color', 'type': 'color', 'value': '#000FF0'},
-]
-
-
-class ScalableSources(pTypes.GroupParameter):
-    def __init__(self, cfg=None, **opts):
-        self.topic_count = 0
-        self.cfg = cfg
-        opts['type'] = 'group'
-        opts['addText'] = "Add channel"
-        pTypes.GroupParameter.__init__(self, **opts)
-
-    def addNew(self, typ=None):
-        name = 'Channel {:d}'.format(self.topic_count % MAX_MQTT_TOPICS_PER_SOURCE)
-        child = dict(name=name, type='group', children=self.cfg, removable=True, renamable=True)
-
-        self.addChild(child)
-        self.topic_count += 1
-
-
-mqtt_cfg = [
-    {'name': 'enabled', 'type': 'bool', 'value': True},
-    {'name': 'host', 'type': 'str', 'value': '127.0.0.1:1883'},
-    ScalableSources(cfg=mqtt_topic_cfg, name='channels', type='group', children=[])
-]
-
-tcp_cfg = [
-    {'name': 'enabled', 'type': 'bool', 'value': True},
-    {'name': 'host', 'type': 'str', 'value': '127.0.0.1:8888'},
-    ScalableSources(cfg=tcp_topic_cfg, name='channels', type='group', children=[])
-
-]
-
-serial_cfg = [
-    {'name': 'enabled', 'type': 'bool', 'value': True}
-]
-
-
-class ScalableSourcesGroup(pTypes.GroupParameter):
-    def __init__(self, **opts):
-        self.source_counts = {
-            'MQTT': 0,
-            'TCP': 0,
-            'Serial': 0,
-        }
-        opts['type'] = 'group'
-        opts['addText'] = "Add source"
-        opts['addList'] = ['MQTT', 'TCP', 'Serial']
-        pTypes.GroupParameter.__init__(self, **opts)
-
-    def addNew(self, typ=None):
-        val = {
-            'MQTT': mqtt_cfg,
-            'TCP': tcp_cfg,
-            'Serial': serial_cfg
-        }[typ]
-
-        if self.source_counts[typ] > 0:
-            return
-        self.source_counts[typ] += 1
-
-        name = '{} {:d}'.format(typ, self.source_counts[typ] % MAX_SOURCES)
-        child = dict(name=name, type='group', children=val, removable=True, renamable=True)
-
-        self.addChild(child)
-
 
 plot_cfg = [
     {'name': 'xmin', 'type': 'int', 'value': -20},
@@ -97,9 +17,9 @@ action_cfg = [
 ]
 
 param_structure = [
-    {'name': 'Grapher configuration dock', 'type': 'group', 'children': action_cfg},
+    {'name': 'Grapher configuration dock'},
+    {'name': 'Grapher configuration actions', 'type': 'group', 'children': action_cfg},
     {'name': 'Plot configuration', 'type': 'group', 'children': plot_cfg},
-    ScalableSourcesGroup(name='Sources', tip='Select source', type='group', children=[])
 ]
 
 
@@ -109,41 +29,31 @@ class ConfigurationHandler(PyQt6.QtCore.QObject):
         self.parameters = Parameter.create(name='config', type='group', children=param_structure)
         self.tree = ParameterTree()
         self.tree.setParameters(self.parameters, showTop=False)
-        self.parameters.param('Grapher configuration dock', 'Save').sigActivated.connect(self.save)
-        self.parameters.param('Grapher configuration dock', 'Load').sigActivated.connect(self.load)
+        self.channels = dict()
+        self.parameters.param('Grapher configuration actions', 'Save').sigActivated.connect(self.save)
+        self.parameters.param('Grapher configuration actions', 'Load').sigActivated.connect(self.load)
+
+        self.channels_file = 'channels.json'
+        self.dat_file = '.grapher.dat'
+
+        self.load_channels()
 
     def save(self):
-        user_data = 'grapher.json'
-        private = '.grapher.dat'
-        with open(user_data, 'w') as fid:
-            print(self.parameters.saveState(filter='user'))
-            json.dump(self.parameters.saveState(filter='user'), fid, indent=4)
-
-        with open('tmp.' + user_data, 'w') as fid:
-            json.dump(self.parameters.saveState(), fid, indent=4)
-
-        with open(private, 'wb') as fid:
-            print(self.parameters.saveState())
+        with open(self.dat_file, 'wb') as fid:
             pickle.dump(self.parameters.saveState(), fid)
 
+        with open(self.channels_file, 'w') as fid:
+            json.dump(self.channels, fid)
+
+    def load_channels(self):
+        with open(self.channels_file, 'r') as fid:
+            self.channels = json.load(fid)
+
     def load(self):
-        user_data = 'grapher.json'
-        private = '.grapher.dat'
-
-        with open(user_data) as fid:
-            user_data_dict = json.load(fid)
-            print(user_data_dict)
-
-        with open(private, 'rb') as fid:
+        with open(self.dat_file, 'rb') as fid:
             data = pickle.load(fid)
-            print(data)
-
-        data.update(user_data_dict)
 
         self.parameters.restoreState(data)
 
-        with open('tmp.json', 'w') as fid:
-            json.dump(data, fid)
-
-        self.parameters.param('Grapher configuration dock', 'Save').sigActivated.connect(self.save)
-        self.parameters.param('Grapher configuration dock', 'Load').sigActivated.connect(self.load)
+        self.parameters.param('Grapher configuration actions', 'Save').sigActivated.connect(self.save)
+        self.parameters.param('Grapher configuration actions', 'Load').sigActivated.connect(self.load)
