@@ -13,16 +13,28 @@ logger = gl.get_logger(__name__, logging.DEBUG)
 class MqttSink(DataProvider):
     post_signal = PyQt6.QtCore.pyqtSignal(DataPacket)
 
-    def __init__(self, host, port, topics):
+    def __init__(self):
         super().__init__()
 
         self.name = 'grapher'
-        self.host = host
-        self.port = port
+        self.host = ''
+        self.port = 0
         self.client = None
-        self.topics = topics
+        self.topics = []
 
-    def connect(self):
+    def update_host(self, hostname, port):
+        self.host = hostname
+        self.port = port
+        self.close()
+        self.connect_client()
+
+    def update_topics(self, topics):
+        self.topics = topics
+        if self.client.is_connected():
+            for topic in self.topics:
+                self.client.subscribe(topic)
+
+    def connect_client(self):
         self.client = mqtt.Client(self.name)
         self.client.on_connect = self.on_connect
         self.client.on_disconnect = self.on_disconnect

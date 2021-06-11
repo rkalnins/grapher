@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QMainWindow
 from pyqtgraph.dockarea import *
 
 import grapher.util.grapher_logging as gl
-from grapher.Plotter import Plotter, Source
+from grapher.Plotter import Plotter
 from grapher.config.config import ConfigurationHandler
 
 logger = gl.get_logger(__name__, logging.DEBUG)
@@ -40,31 +40,42 @@ class App:
 
         for p, change, data in changes:
             path = self.cfg.parameters.childPath(p)
-            print(path)
-            if path[0] == 'Sources':
-                if change == 'childAdded':
-                    print('child added')
-                    pass
-                elif change == 'value':
-                    source = self.cfg.parameters.child(path[0], path[1])
+            if change == 'childAdded' and path[0] == 'Sources':
+                if len(path) == 2:
+                    self.plotter.populate_channels(self.cfg.parameters)
+                elif len(path) > 3:
+                    if path[2].split()[0] == 'MQTT':
+                        self.plotter.update_mqtt_topics()
 
-                    # if topic is being updated
-                    if len(path) == 5:
-                        topic = source.child(path[2], path[3])
-                        en = topic.child('enabled')
-                        c = topic.child('color')
 
-                        # create new source or update existing
-                        if path[4] == 'ID':
-                            if data not in self.plotter.sources:
-                                self.plotter.sources[data] = Source(c)
-                        else:
-                            topic_id = topic.child('ID')
-                            self.plotter.sources[topic_id].enabled = en
-                            self.plotter.sources[topic_id].rgb = c.getRgb()
 
-            elif path[0] == 'Plot Configuration':
-                pass
+        # for p, change, data in changes:
+        #     path = self.cfg.parameters.childPath(p)
+        #     print(path)
+        #     if path[0] == 'Sources':
+        #         if change == 'childAdded':
+        #             print('child added')
+        #             pass
+        #         elif change == 'value':
+        #             source = self.cfg.parameters.child(path[0], path[1])
+        #
+        #             # if topic is being updated
+        #             if len(path) == 5:
+        #                 topic = source.child(path[2], path[3])
+        #                 en = topic.child('enabled')
+        #                 c = topic.child('color')
+        #
+        #                 # create new source or update existing
+        #                 if path[4] == 'ID':
+        #                     if data not in self.plotter.sources:
+        #                         self.plotter.sources[data] = Source(c)
+        #                 else:
+        #                     topic_id = topic.child('ID')
+        #                     self.plotter.sources[topic_id].enabled = en
+        #                     self.plotter.sources[topic_id].rgb = c.getRgb()
+        #
+        #     elif path[0] == 'Plot Configuration':
+        #         pass
 
         self.plotter.init_io()
         self.plotter.start()

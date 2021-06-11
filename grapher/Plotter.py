@@ -18,7 +18,8 @@ logger = gl.get_logger(__name__, logging.DEBUG)
 CHUNK_SIZE = 300
 BUFFER_SIZE = 100
 
-class Source:
+
+class Channel:
     def __init__(self, color: QColor):
         self.curves = list()
         self.data = np.zeros((CHUNK_SIZE + 1, 2))
@@ -29,6 +30,15 @@ class Source:
         self.rgb = color.getRgb()
         self.init = False
         self.enabled = True
+
+    def update_enabled(self, val):
+        self.enabled = val
+
+    def update_color(self, color):
+        self.enabled = color.getRgb()
+
+        for c in self.curves:
+            c.setPen(QColor(self.rgb))
 
 
 class Plotter(PyQt6.QtCore.QObject):
@@ -51,8 +61,8 @@ class Plotter(PyQt6.QtCore.QObject):
         self.mqtt_enabled = False
         self.tcp_enabled = False
 
-        self.sources = dict()
-        self.populate_sources(ptree)
+        self.channels = dict()
+        self.populate_channels(ptree)
 
         self.timer = pg.QtCore.QTimer()
 
@@ -73,12 +83,12 @@ class Plotter(PyQt6.QtCore.QObject):
         self.mqtt_enabled = False
         self.tcp_enabled = False
 
-        self.sources = dict()
-        self.populate_sources(ptree)
+        self.channels = dict()
+        self.populate_channels(ptree)
 
         self.timer = pg.QtCore.QTimer()
 
-    def populate_sources(self, ptree: Parameter):
+    def populate_channels(self, ptree: Parameter):
         sources = ptree.child('Sources')
         for s in sources:
             src_type = s.opts['name'].split()[0]
@@ -92,17 +102,36 @@ class Plotter(PyQt6.QtCore.QObject):
         # support only one MQTT source right now
         if not self.mqtt_enabled:
             self.mqtt_enabled = True
-            topics = []
+            self.mqtt_sink = MqttSink()
 
-            for topic in s.child('topics'):
-                if len(topic['path']) > 0:
-                    self.sources[topic['ID']] = Source(self.chunk_size, self.buffer_size, topic['color'])
-                    topics.append(topic['path'])
+            self.update_mqtt_topics(s)
+            self.update_mqtt_host(s)
 
-            addr: str = s['host']
-            parts = addr.split(':')
+    def update_mqtt_host(self, s):
+        addr: str = s['host']
+        parts = addr.split(':')
 
-            self.mqtt_sink = MqttSink(parts[0], int(parts[1]), topics)
+        if parts[0] != self.mqtt_sink.host or int(parts[1]) != self.mqtt_sink.port:
+            self.mqtt_sink.update_host(parts[0], int(parts[1]))
+
+    def update_mqtt_topics(self, s):
+        topics = self.update_channels_for_source(s)
+        self.mqtt_sink.update_topics(topics)
+
+    def update_channels_for_source(self, s):
+        topics = []
+
+        for topic in s.child('channels'):
+            if len(topic['topic']) > 0 and topic['ID'] != -1:
+                self.channels[topic['ID']] = Channel(topic['color'])
+                self.channels[topic['ID']] = topic['ID']
+
+                topic['color'].sigValueChanged.connect(self.channels[topic['ID']].update_color)
+                topic['enabled'].sigValueChanged.connect(self.channels[topic['ID']].update_enabled)
+
+                topics.append(topic['topic'])
+
+        return topics
 
     def add_tcp_source(self, s):
         logger.debug('Adding TCP source')
@@ -111,12 +140,12 @@ class Plotter(PyQt6.QtCore.QObject):
         if not self.tcp_enabled:
             self.tcp_enabled = True
 
-            for topic in s.child['topics']:
-                self.sources[topic['ID']] = Source(topic['color'])
-
-            addr: str = s['host']
-            parts = addr.split(':')
-            self.tcp_sink = TCPSink(parts[0], int(parts[1]), self.post_data)
+            # for topic in s.child['topics']:
+            #     self.channels[topic['ID']] = Channel(topic['color'])
+            #
+            # addr: str = s['host']
+            # parts = addr.split(':')
+            # self.tcp_sink = TCPSink(parts[0], int(parts[1]), self.post_data)
 
     def init_io(self):
         logger.debug('Getting data')
@@ -127,7 +156,7 @@ class Plotter(PyQt6.QtCore.QObject):
             self.tcp_thread.started.connect(self.tcp_sink.run)
 
         if self.mqtt_enabled:
-            self.mqtt_sink.connect()
+            self.mqtt_sink.connect_client()
 
     def start(self):
         logger.debug('starting')
@@ -159,11 +188,11 @@ class Plotter(PyQt6.QtCore.QObject):
     @PyQt6.QtCore.pyqtSlot(DataPacket)
     def post_data(self, msg: DataPacket):
 
-        if not self.sources[msg.source_id].init:
-            self.sources[msg.source_id].init = True
-            self.create_new_curve(self.sources[msg.source_id])
+        if not self.channels[msg.source_id].init:
+            self.channels[msg.source_id].init = True
+            self.create_new_curve(self.channels[msg.source_id])
 
-        s = self.sources[msg.source_id]
+        s = self.channels[msg.source_id]
         logger.debug('%s %s %s %s', s.buffer_idx, msg.data, msg.timestamp, msg.timestamp - self.start_time)
 
         with self.data_mtx:
@@ -171,71 +200,71 @@ class Plotter(PyQt6.QtCore.QObject):
             s.buffer[s.buffer_idx, 1] = msg.data
             s.buffer_idx += 1
 
-    def create_new_curve(self, source: Source):
-        logger.debug('New curve %s', source.chunk_idx)
+    def create_new_curve(self, channel: Channel):
+        logger.debug('New curve %s', channel.chunk_idx)
 
         with self.curve_mtx:
-            curve = self.plot.plot(pen=source.rgb)
-            source.curves.append(curve)
-            last = source.data[source.chunk_idx - 1]
+            curve = self.plot.plot(pen=channel.rgb)
+            channel.curves.append(curve)
+            last = channel.data[channel.chunk_idx - 1]
 
-            source.chunk_idx = 0
-            source.ptr = 0
+            channel.chunk_idx = 0
+            channel.ptr = 0
 
-            source.data = np.zeros((self.chunk_size + 1, 2))
-            source.data[0] = last
+            channel.data = np.zeros((self.chunk_size + 1, 2))
+            channel.data[0] = last
 
-            while len(source.curves) > self.max_chunks:
-                c = source.curves.pop(0)
+            while len(channel.curves) > self.max_chunks:
+                c = channel.curves.pop(0)
                 self.plot.removeItem(c)
 
         return curve
 
-    def add_new_data(self, curve: pg.plot, source: Source):
-        logger.debug('new data %s', source.buffer_idx)
+    def add_new_data(self, curve: pg.plot, channel: Channel):
+        logger.debug('new data %s', channel.buffer_idx)
         # set data with accumulated new data
-        start = source.chunk_idx + 1
-        end = start + source.buffer_idx
+        start = channel.chunk_idx + 1
+        end = start + channel.buffer_idx
 
-        print(start, end, source.chunk_idx, source.buffer_idx)
+        print(start, end, channel.chunk_idx, channel.buffer_idx)
 
-        source.data[start:end] = source.buffer[:source.buffer_idx]
+        channel.data[start:end] = channel.buffer[:channel.buffer_idx]
 
-        curve.setData(x=source.data[:end, 0],
-                      y=source.data[:end, 1])
+        curve.setData(x=channel.data[:end, 0],
+                      y=channel.data[:end, 1])
 
         # reset buffer and counter
-        source.ptr += source.buffer_idx
-        source.buffer = np.zeros((self.buffer_size + 1, 2))
-        source.buffer_idx = 0
+        channel.ptr += channel.buffer_idx
+        channel.buffer = np.zeros((self.buffer_size + 1, 2))
+        channel.buffer_idx = 0
 
-    def add_constant_data(self, now, curve, source: Source):
-        source.data[source.chunk_idx + 1, 0] = now - self.start_time
-        source.data[source.chunk_idx + 1, 1] = source.data[source.chunk_idx, 1]
+    def add_constant_data(self, now, curve, channel: Channel):
+        channel.data[channel.chunk_idx + 1, 0] = now - self.start_time
+        channel.data[channel.chunk_idx + 1, 1] = channel.data[channel.chunk_idx, 1]
 
-        curve.setData(x=source.data[:source.chunk_idx + 1, 0],
-                      y=source.data[:source.chunk_idx + 1, 1])
+        curve.setData(x=channel.data[:channel.chunk_idx + 1, 0],
+                      y=channel.data[:channel.chunk_idx + 1, 1])
 
-        source.ptr += 1
+        channel.ptr += 1
 
     def update(self):
         now = pg.ptime.time()
 
-        for _, s in self.sources.items():
-            for c in s.curves:
-                c.setPos(-(now - self.start_time), 0)
+        for _, channel in self.channels.items():
+            for curve in channel.curves:
+                curve.setPos(-(now - self.start_time), 0)
 
         with self.data_mtx:
 
-            for _, s in self.sources.items():
-                s.chunk_idx = s.ptr % self.chunk_size
+            for _, channel in self.channels.items():
+                channel.chunk_idx = channel.ptr % self.chunk_size
 
-                if s.chunk_idx == 0 or (s.chunk_idx * 1.25) > self.chunk_size:
-                    curve = self.create_new_curve(s)
+                if channel.chunk_idx == 0 or (channel.chunk_idx * 1.25) > self.chunk_size:
+                    curve = self.create_new_curve(channel)
                 else:
-                    curve = s.curves[-1]
+                    curve = channel.curves[-1]
 
-                if s.buffer_idx == 0:
-                    self.add_constant_data(now, curve, s)
+                if channel.buffer_idx == 0:
+                    self.add_constant_data(now, curve, channel)
                 else:
-                    self.add_new_data(curve, s)
+                    self.add_new_data(curve, channel)

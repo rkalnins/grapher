@@ -8,7 +8,7 @@ MAX_MQTT_TOPICS_PER_SOURCE = 10
 mqtt_topic_cfg = [
     {'name': 'ID', 'type': 'int', 'value': -1},
     {'name': 'enabled', 'type': 'bool', 'value': False},
-    {'name': 'path', 'type': 'str', 'value': ''},
+    {'name': 'topic', 'type': 'str', 'value': ''},
     {'name': 'color', 'type': 'color', 'value': '#000FF0'},
 ]
 
@@ -23,11 +23,11 @@ class ScalableSources(pTypes.GroupParameter):
         self.topic_count = 0
         self.cfg = cfg
         opts['type'] = 'group'
-        opts['addText'] = "Add topic"
+        opts['addText'] = "Add channel"
         pTypes.GroupParameter.__init__(self, **opts)
 
     def addNew(self, typ=None):
-        name = 'Topic {:d}'.format(self.topic_count % MAX_MQTT_TOPICS_PER_SOURCE)
+        name = 'Channel {:d}'.format(self.topic_count % MAX_MQTT_TOPICS_PER_SOURCE)
         child = dict(name=name, type='group', children=self.cfg, removable=True, renamable=True)
 
         self.addChild(child)
@@ -37,13 +37,13 @@ class ScalableSources(pTypes.GroupParameter):
 mqtt_cfg = [
     {'name': 'enabled', 'type': 'bool', 'value': True},
     {'name': 'host', 'type': 'str', 'value': '127.0.0.1:1883'},
-    ScalableSources(cfg=mqtt_topic_cfg, name='topics', type='group', children=[])
+    ScalableSources(cfg=mqtt_topic_cfg, name='channels', type='group', children=[])
 ]
 
 tcp_cfg = [
     {'name': 'enabled', 'type': 'bool', 'value': True},
     {'name': 'host', 'type': 'str', 'value': '127.0.0.1:8888'},
-    ScalableSources(cfg=tcp_topic_cfg, name='topics', type='group', children=[])
+    ScalableSources(cfg=tcp_topic_cfg, name='channels', type='group', children=[])
 
 ]
 
