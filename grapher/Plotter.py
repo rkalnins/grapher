@@ -91,7 +91,7 @@ class Plotter(PyQt6.QtCore.QObject):
     def populate_channels(self, ptree: Parameter):
         sources = ptree.child('Sources')
         for s in sources:
-            src_type = s.opts['name'].split()[0]
+            src_type = get_source_type(s)
             if src_type == 'MQTT':
                 self.add_mqtt_source(s)
             elif src_type == 'TCP':
@@ -136,16 +136,16 @@ class Plotter(PyQt6.QtCore.QObject):
     def add_tcp_source(self, s):
         logger.debug('Adding TCP source')
 
-        # support only one MQTT source right now
+        # support only one TCP source right now
         if not self.tcp_enabled:
             self.tcp_enabled = True
 
-            # for topic in s.child['topics']:
-            #     self.channels[topic['ID']] = Channel(topic['color'])
-            #
-            # addr: str = s['host']
-            # parts = addr.split(':')
-            # self.tcp_sink = TCPSink(parts[0], int(parts[1]), self.post_data)
+            for topic in s.child['topics']:
+                self.channels[topic['ID']] = Channel(topic['color'])
+
+            addr: str = s['host']
+            parts = addr.split(':')
+            self.tcp_sink = TCPSink(parts[0], int(parts[1]), self.post_data)
 
     def init_io(self):
         logger.debug('Getting data')
@@ -268,3 +268,7 @@ class Plotter(PyQt6.QtCore.QObject):
                     self.add_constant_data(now, curve, channel)
                 else:
                     self.add_new_data(curve, channel)
+
+
+def get_source_type(s):
+    return s.opts['name'].split()[0]
