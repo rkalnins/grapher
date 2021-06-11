@@ -1,5 +1,5 @@
-import pickle
 import json
+import pickle
 
 import PyQt6.QtCore
 import pyqtgraph.parametertree.parameterTypes as pTypes
@@ -74,6 +74,8 @@ class ScalableSourcesGroup(pTypes.GroupParameter):
             'Serial': serial_cfg
         }[typ]
 
+        if self.source_counts[typ] > 0:
+            return
         self.source_counts[typ] += 1
 
         name = '{} {:d}'.format(typ, self.source_counts[typ] % MAX_SOURCES)
@@ -107,29 +109,41 @@ class ConfigurationHandler(PyQt6.QtCore.QObject):
         self.parameters = Parameter.create(name='config', type='group', children=param_structure)
         self.tree = ParameterTree()
         self.tree.setParameters(self.parameters, showTop=False)
-        self.tree.sizeHint().width()
         self.parameters.param('Grapher configuration dock', 'Save').sigActivated.connect(self.save)
         self.parameters.param('Grapher configuration dock', 'Load').sigActivated.connect(self.load)
 
     def save(self):
-        user_data = 'grapher.save'
-        private = '.grapher.save'
+        user_data = 'grapher.json'
+        private = '.grapher.dat'
         with open(user_data, 'w') as fid:
+            print(self.parameters.saveState(filter='user'))
             json.dump(self.parameters.saveState(filter='user'), fid, indent=4)
 
-        with open(private, 'w') as fid:
+        with open('tmp.' + user_data, 'w') as fid:
             json.dump(self.parameters.saveState(), fid, indent=4)
 
+        with open(private, 'wb') as fid:
+            print(self.parameters.saveState())
+            pickle.dump(self.parameters.saveState(), fid)
+
     def load(self):
-        user_data = 'grapher.save'
-        private = '.grapher.save'
+        user_data = 'grapher.json'
+        private = '.grapher.dat'
 
         with open(user_data) as fid:
             user_data_dict = json.load(fid)
+            print(user_data_dict)
 
-        with open(private) as fid:
-            data = json.load(fid)
+        with open(private, 'rb') as fid:
+            data = pickle.load(fid)
+            print(data)
 
         data.update(user_data_dict)
 
         self.parameters.restoreState(data)
+
+        with open('tmp.json', 'w') as fid:
+            json.dump(data, fid)
+
+        self.parameters.param('Grapher configuration dock', 'Save').sigActivated.connect(self.save)
+        self.parameters.param('Grapher configuration dock', 'Load').sigActivated.connect(self.load)
