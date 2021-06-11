@@ -11,7 +11,6 @@ Each source has a list of channels. Channels are graphable.
 
 - color
 - id
-- private id
 - enabled
 - < all other graphing stuff \>
 
@@ -37,6 +36,5 @@ Each source has a list of channels. Channels are graphable.
             - enabled
             - color
     
-
-1. Parameters initialized to default
-    
+1. Load file with configuration
+2. Reset

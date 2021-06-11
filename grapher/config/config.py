@@ -1,3 +1,6 @@
+import pickle
+import json
+
 import PyQt6.QtCore
 import pyqtgraph.parametertree.parameterTypes as pTypes
 from pyqtgraph.parametertree import ParameterTree, Parameter
@@ -86,8 +89,13 @@ plot_cfg = [
     {'name': 'ymax', 'type': 'int', 'value': 50}
 ]
 
+action_cfg = [
+    {'name': 'Save', 'type': 'action'},
+    {'name': 'Load', 'type': 'action'}
+]
+
 param_structure = [
-    {'name': 'Grapher configuration dock'},
+    {'name': 'Grapher configuration dock', 'type': 'group', 'children': action_cfg},
     {'name': 'Plot configuration', 'type': 'group', 'children': plot_cfg},
     ScalableSourcesGroup(name='Sources', tip='Select source', type='group', children=[])
 ]
@@ -100,3 +108,28 @@ class ConfigurationHandler(PyQt6.QtCore.QObject):
         self.tree = ParameterTree()
         self.tree.setParameters(self.parameters, showTop=False)
         self.tree.sizeHint().width()
+        self.parameters.param('Grapher configuration dock', 'Save').sigActivated.connect(self.save)
+        self.parameters.param('Grapher configuration dock', 'Load').sigActivated.connect(self.load)
+
+    def save(self):
+        user_data = 'grapher.save'
+        private = '.grapher.save'
+        with open(user_data, 'w') as fid:
+            json.dump(self.parameters.saveState(filter='user'), fid, indent=4)
+
+        with open(private, 'w') as fid:
+            json.dump(self.parameters.saveState(), fid, indent=4)
+
+    def load(self):
+        user_data = 'grapher.save'
+        private = '.grapher.save'
+
+        with open(user_data) as fid:
+            user_data_dict = json.load(fid)
+
+        with open(private) as fid:
+            data = json.load(fid)
+
+        data.update(user_data_dict)
+
+        self.parameters.restoreState(data)

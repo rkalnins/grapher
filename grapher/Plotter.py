@@ -123,6 +123,7 @@ class Plotter(PyQt6.QtCore.QObject):
 
         for topic in s.child('channels'):
             if len(topic['topic']) > 0 and topic['ID'] != -1:
+                logger.debug('Adding channel %d', topic['topic'])
                 self.channels[topic['ID']] = Channel(topic['color'])
                 self.channels[topic['ID']] = topic['ID']
 
