@@ -59,8 +59,6 @@ class MqttSink(DataProvider):
         packet.timestamp = unpacked_msg[1] / 1000.0
         packet.data = unpacked_msg[2]
 
-        logger.debug('%s %s %s %s', msg.payload, packet.source_id, packet.timestamp, packet.data)
-
         self.post_signal.emit(packet)
 
     def on_connect(self, client, userdata, flags, rc):

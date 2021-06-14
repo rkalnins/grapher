@@ -182,7 +182,6 @@ class Plotter(PyQt6.QtCore.QObject):
         s = self.channels[msg.source_id]
 
         with self.data_mtx:
-            logger.debug('%s %s %s %s', msg.source_id, msg.data, msg.timestamp, msg.timestamp - self.start_time)
             s.buffer[s.buffer_idx, 0] = msg.timestamp - self.start_time
             s.buffer[s.buffer_idx, 1] = msg.data
             s.buffer_idx += 1
@@ -198,7 +197,6 @@ class Plotter(PyQt6.QtCore.QObject):
 
             channel.data = np.zeros((CHUNK_SIZE + 1, 2))
             channel.data[0] = last
-            logger.debug('Created new curve')
 
             while len(channel.curves) > self.max_chunks:
                 c = channel.curves.pop(0)
@@ -210,8 +208,6 @@ class Plotter(PyQt6.QtCore.QObject):
         # set data with accumulated new data
         start = channel.chunk_idx + 1
         end = start + channel.buffer_idx
-
-        logger.debug('%s %s %s %s', start, end, channel.chunk_idx, channel.buffer_idx)
 
         channel.data[start:end] = channel.buffer[:channel.buffer_idx]
 

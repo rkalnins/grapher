@@ -34,7 +34,7 @@ def mqtt_test():
 
         packed = struct.pack('ilf', data.source_id, data.timestamp, data.data)
 
-        res = client.publish('topic/test/a', packed)
+        res = client.publish('topic/test/%s' % sys.argv[3], packed)
 
         if res[0] != 0:
             print('failed to send')
@@ -42,7 +42,7 @@ def mqtt_test():
             print('sent ', packed)
 
         i += 1
-        time.sleep(0.5)
+        time.sleep(0.01)
 
 
 if __name__ == '__main__':
