@@ -49,8 +49,6 @@ class Plotter(PyQt6.QtCore.QObject):
         self.data_mtx = Lock()
         self.curve_mtx = Lock()
 
-        self.chunk_size = 300
-        self.buffer_size = 100
         self.max_chunks = 10
         self.start_time = 0
 
@@ -63,16 +61,12 @@ class Plotter(PyQt6.QtCore.QObject):
         self.channels = dict()
         self.populate_channels(channels_cfg)
 
-        self.timer = pg.QtCore.QTimer()
-
-        logger.debug('done init')
+        self.timer = pg.QtCore.QTimer(self)
 
     def reset(self, plot_cfg, channels_cfg):
         self.data_mtx = Lock()
         self.curve_mtx = Lock()
 
-        self.chunk_size = 300
-        self.buffer_size = 100
         self.max_chunks = 10
         self.start_time = 0
 
@@ -85,7 +79,7 @@ class Plotter(PyQt6.QtCore.QObject):
         self.channels = dict()
         self.populate_channels(channels_cfg)
 
-        self.timer = pg.QtCore.QTimer()
+        self.timer = pg.QtCore.QTimer(self)
 
     def populate_channels(self, channels_cfg: dict):
         if 'MQTT' in channels_cfg:
@@ -117,6 +111,7 @@ class Plotter(PyQt6.QtCore.QObject):
     def update_mqtt_topics(self, s: dict):
         topics = self.update_channels_for_source(s['channels'])
         self.mqtt_sink.update_topics(topics)
+        logger.info('Updated MQTT topics')
 
     def update_channels_for_source(self, channels: list):
         topics = []
@@ -143,18 +138,19 @@ class Plotter(PyQt6.QtCore.QObject):
             self.tcp_sink = TCPSink(s['host'], s['port'], self.post_data)
 
     def init_io(self):
-        logger.debug('Getting data')
         if self.tcp_enabled:
             self.tcp_sink.start()
             self.tcp_thread = QThread()
             self.tcp_sink.moveToThread(self.tcp_thread)
             self.tcp_thread.started.connect(self.tcp_sink.run)
+            logger.info('TCP connected and ready to run')
 
         if self.mqtt_enabled:
             self.mqtt_sink.connect_client()
+            logger.info('MQTT connected')
 
     def start(self):
-        logger.debug('starting')
+        logger.info('Starting logger')
 
         self.plot.setLabel('bottom', 'Time', 's')
         self.plot.setRange(xRange=[-10, 0], yRange=[-2, 40])
@@ -165,14 +161,15 @@ class Plotter(PyQt6.QtCore.QObject):
         if self.tcp_enabled:
             self.tcp_sink.post_signal.connect(self.post_data)
             self.tcp_thread.start()
+            logger.info('TCP started')
 
         if self.mqtt_enabled:
             self.mqtt_sink.post_signal.connect(self.post_data)
             self.mqtt_sink.start()
-
-        logger.debug('done setup')
+            logger.info('MQTT started')
 
         self.start_time = pg.ptime.time()
+        logger.debug('Start time: %s', self.start_time)
 
     def close(self):
         if self.tcp_enabled:
@@ -183,16 +180,14 @@ class Plotter(PyQt6.QtCore.QObject):
     @PyQt6.QtCore.pyqtSlot(DataPacket)
     def post_data(self, msg: DataPacket):
         s = self.channels[msg.source_id]
-        logger.debug('%s %s %s %s', s.buffer_idx, msg.data, msg.timestamp, msg.timestamp - self.start_time)
 
         with self.data_mtx:
+            logger.debug('%s %s %s %s', msg.source_id, msg.data, msg.timestamp, msg.timestamp - self.start_time)
             s.buffer[s.buffer_idx, 0] = msg.timestamp - self.start_time
             s.buffer[s.buffer_idx, 1] = msg.data
             s.buffer_idx += 1
 
     def create_new_curve(self, channel: Channel):
-        logger.debug('New curve %s', channel.chunk_idx)
-
         with self.curve_mtx:
             curve = self.plot.plot(pen=channel.rgb)
             channel.curves.append(curve)
@@ -201,8 +196,9 @@ class Plotter(PyQt6.QtCore.QObject):
             channel.chunk_idx = 0
             channel.ptr = 0
 
-            channel.data = np.zeros((self.chunk_size + 1, 2))
+            channel.data = np.zeros((CHUNK_SIZE + 1, 2))
             channel.data[0] = last
+            logger.debug('Created new curve')
 
             while len(channel.curves) > self.max_chunks:
                 c = channel.curves.pop(0)
@@ -210,25 +206,23 @@ class Plotter(PyQt6.QtCore.QObject):
 
         return curve
 
-    def add_new_data(self, curve: pg.plot, channel: Channel):
-        logger.debug('new data %s', channel.buffer_idx)
+    def add_new_data(self, curve, channel: Channel):
         # set data with accumulated new data
         start = channel.chunk_idx + 1
         end = start + channel.buffer_idx
 
-        print(start, end, channel.chunk_idx, channel.buffer_idx)
+        logger.debug('%s %s %s %s', start, end, channel.chunk_idx, channel.buffer_idx)
 
         channel.data[start:end] = channel.buffer[:channel.buffer_idx]
 
-        curve.setData(x=channel.data[:end, 0],
-                      y=channel.data[:end, 1])
+        curve.setData(x=channel.data[:end, 0], y=channel.data[:end, 1])
 
         # reset buffer and counter
         channel.ptr += channel.buffer_idx
-        channel.buffer = np.zeros((self.buffer_size + 1, 2))
+        channel.buffer = np.zeros((BUFFER_SIZE + 1, 2))
         channel.buffer_idx = 0
 
-    def add_constant_data(self, now, curve, channel: Channel):
+    def add_constant_data(self, now, curve: pg.plot, channel: Channel):
         channel.data[channel.chunk_idx + 1, 0] = now - self.start_time
         channel.data[channel.chunk_idx + 1, 1] = channel.data[channel.chunk_idx, 1]
 
@@ -247,9 +241,9 @@ class Plotter(PyQt6.QtCore.QObject):
         with self.data_mtx:
 
             for _, channel in self.channels.items():
-                channel.chunk_idx = channel.ptr % self.chunk_size
+                channel.chunk_idx = channel.ptr % CHUNK_SIZE
 
-                if channel.chunk_idx == 0 or (channel.chunk_idx * 1.25) > self.chunk_size:
+                if channel.chunk_idx == 0 or (channel.chunk_idx * 1.25) > CHUNK_SIZE:
                     curve = self.create_new_curve(channel)
                 else:
                     curve = channel.curves[-1]
@@ -258,7 +252,6 @@ class Plotter(PyQt6.QtCore.QObject):
                     self.add_constant_data(now, curve, channel)
                 else:
                     self.add_new_data(curve, channel)
-
 
 def get_source_type(s):
     return s.opts['name'].split()[0]

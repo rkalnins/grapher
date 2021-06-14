@@ -1,1 +1,19 @@
-{"MQTT": {"enabled": true, "host": "127.0.0.1", "port": 1883, "channels": [{"id": 50, "color": [10, 20, 10], "enabled": true, "topic": "topic/test/a"}]}, "TCP": {"enabled": false, "host": "127.0.0.1", "port": 1883, "channels": [{"id": 1, "color": [100, 20, 255], "enabled": true}]}}
+{
+  "MQTT": {
+    "enabled": true,
+    "host": "127.0.0.1",
+    "port": 1883,
+    "channels": [
+      {
+        "id": 50,
+        "color": [
+          100,
+          200,
+          100
+        ],
+        "enabled": true,
+        "topic": "topic/test/a"
+      }
+    ]
+  }
+}

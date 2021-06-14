@@ -25,10 +25,11 @@ class TCPSink(DataProvider):
 
     def close(self):
         self.running = False
+        logger.info('Closed TCP sink')
 
     def accept_wrapper(self, sock):
         conn, addr = sock.accept()  # Should be ready to read
-        logger.debug("accepted connection from %s", addr)
+        logger.debug("Accepted connection from %s", addr)
         conn.setblocking(False)
         data = types.SimpleNamespace(addr=addr, inb=b"", outb=b"")
         events = selectors.EVENT_READ

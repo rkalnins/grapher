@@ -50,7 +50,8 @@ if __name__ == '__main__':
     dock_cfg.addWidget(app.cfg.tree)
 
     win.show()
-    logger.debug('exec')
+    logger.info('Executing...')
     pg.exec()
+    logger.debug('Done...')
 
     app.plotter.close()

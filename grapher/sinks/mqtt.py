@@ -50,6 +50,7 @@ class MqttSink(DataProvider):
 
     def close(self):
         self.on_disconnect()
+        logger.info('Closed MQTT sink')
 
     def on_data(self, mosq, userdata, msg: mqtt.MQTTMessage):
         unpacked_msg = struct.unpack('ilf', msg.payload)
