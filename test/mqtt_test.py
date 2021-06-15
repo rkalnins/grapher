@@ -1,3 +1,4 @@
+import math
 import time
 
 import paho.mqtt.client as mqtt
@@ -26,10 +27,10 @@ def mqtt_test():
     i = 0
 
     print('starting')
-    while i < 400:
+    while i < 8000:
         data = DataPacket()
         data.source_id = int(sys.argv[1])
-        data.data = -1 * i % int(sys.argv[2]) + 0.7
+        data.data = -int(sys.argv[2]) * math.sin(1 / 100 * i + 0.7)
         data.timestamp = round(pg.ptime.time() * 1000)
 
         packed = struct.pack('ilf', data.source_id, data.timestamp, data.data)

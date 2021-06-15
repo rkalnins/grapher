@@ -1,4 +1,5 @@
 import asyncio
+import math
 import sys
 import struct
 import pyqtgraph as pg
@@ -15,10 +16,10 @@ async def tcp_test_client():
 
     i = 0
 
-    while i < 400:
+    while i < 3000:
         data = DataPacket()
         data.source_id = int(sys.argv[1])
-        data.data = i % int(sys.argv[2]) + 0.5
+        data.data = math.tan((i - float(sys.argv[2])) / float(sys.argv[3])) + float(sys.argv[4])
         data.timestamp = round(pg.ptime.time() * 1000)
         print(data.timestamp)
 
@@ -26,7 +27,7 @@ async def tcp_test_client():
         await writer.drain()
         i += 1
 
-        await asyncio.sleep(0.01)
+        await asyncio.sleep(0.03)
 
     print('Close the connection')
     writer.close()

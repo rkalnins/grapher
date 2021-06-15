@@ -1,5 +1,7 @@
 import logging
 
+import PyQt6
+import PyQt6.QtCore
 import pyqtgraph as pg
 from PyQt6.QtWidgets import QMainWindow
 from pyqtgraph.dockarea import *
@@ -10,33 +12,38 @@ from grapher.config.config import ConfigurationHandler
 
 logger = gl.get_logger(__name__, logging.DEBUG)
 
-app = pg.mkQApp("Grapher")
+qapp = pg.mkQApp("Grapher")
 
-win = QMainWindow()
-area = DockArea()
 
-win.setCentralWidget(area)
-win.resize(1000, 500)
-win.setWindowTitle('Grapher')
+class MainWindow(QMainWindow):
+    def __init__(self, app):
+        super().__init__()
+        area = DockArea()
+        self.setCentralWidget(area)
+        self.resize(1000, 500)
+        self.setWindowTitle('Grapher')
+        self.app = app
 
-dock_plot = Dock("Plot", size=(500, 200))
-dock_cfg = Dock("Config", size=(500, 200))
+        self.dock_plot = Dock("Plot", size=(500, 200))
+        self.dock_cfg = Dock("Config", size=(500, 200))
 
-area.addDock(dock_plot, 'left')
-area.addDock(dock_cfg, 'right', dock_plot)
+        area.addDock(self.dock_plot, 'left')
+        area.addDock(self.dock_cfg, 'right', self.dock_plot)
+
+        self.dock_plot.addWidget(app.plotter.plot)
+        self.dock_cfg.addWidget(app.cfg.tree)
+
+    def keyPressEvent(self, event: PyQt6.QtGui.QKeyEvent):
+        super(MainWindow, self).keyPressEvent(event)
+        logger.debug('key pressed')
+        if event.key() == PyQt6.QtCore.Qt.Key.Key_Space:
+            app.plotter.toggle_pause()
 
 
 class App:
     def __init__(self):
         self.cfg = ConfigurationHandler()
-
         self.plotter = Plotter(self.cfg.parameters, self.cfg.channels)
-        self.plotter.init_io()
-        self.plotter.start()
-
-    def reset(self):
-        self.plotter.close()
-        self.plotter.reset(self.cfg.parameters, self.cfg.channels)
         self.plotter.init_io()
         self.plotter.start()
 
@@ -45,9 +52,7 @@ if __name__ == '__main__':
     logger.info('Starting grapher app')
 
     app = App()
-
-    dock_plot.addWidget(app.plotter.plot)
-    dock_cfg.addWidget(app.cfg.tree)
+    win = MainWindow(app)
 
     win.show()
     logger.info('Executing...')

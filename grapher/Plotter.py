@@ -5,7 +5,7 @@ import PyQt6.QtCore
 import numpy as np
 import pyqtgraph as pg
 from PyQt6.QtCore import QThread
-from PyQt6.QtGui import QColor
+from PyQt6.QtWidgets import QWidget
 
 import grapher.util.grapher_logging as gl
 from grapher.sinks.DataProvider import DataPacket
@@ -30,17 +30,9 @@ class Channel:
         self.init = False
         self.enabled = enabled
 
-    def update_enabled(self, val):
-        self.enabled = val
 
-    def update_color(self, color):
-        self.enabled = color.getRgb()
+class Plotter(QWidget):
 
-        for c in self.curves:
-            c.setPen(QColor(self.rgb))
-
-
-class Plotter(PyQt6.QtCore.QObject):
     def __init__(self, plot_cfg, channels_cfg):
         super().__init__()
         self.plot = pg.PlotWidget(title="Plot")
@@ -58,28 +50,17 @@ class Plotter(PyQt6.QtCore.QObject):
         self.mqtt_enabled = False
         self.tcp_enabled = False
 
-        self.channels = dict()
-        self.populate_channels(channels_cfg)
-
-        self.timer = pg.QtCore.QTimer(self)
-
-    def reset(self, plot_cfg, channels_cfg):
-        self.data_mtx = Lock()
-        self.curve_mtx = Lock()
-
-        self.max_chunks = 10
-        self.start_time = 0
-
-        self.tcp_thread = None
-        self.tcp_sink = None
-        self.mqtt_sink = None
-        self.mqtt_enabled = False
-        self.tcp_enabled = False
+        self.running = True
 
         self.channels = dict()
         self.populate_channels(channels_cfg)
 
         self.timer = pg.QtCore.QTimer(self)
+
+    def toggle_pause(self):
+        logger.debug('Toggling pause')
+        self.running = not self.running
+
 
     def populate_channels(self, channels_cfg: dict):
         if 'MQTT' in channels_cfg:
@@ -179,6 +160,10 @@ class Plotter(PyQt6.QtCore.QObject):
 
     @PyQt6.QtCore.pyqtSlot(DataPacket)
     def post_data(self, msg: DataPacket):
+
+        if not self.running:
+            return
+
         s = self.channels[msg.source_id]
 
         with self.data_mtx:
@@ -228,6 +213,9 @@ class Plotter(PyQt6.QtCore.QObject):
         channel.ptr += 1
 
     def update(self):
+        if not self.running:
+            return
+
         now = pg.ptime.time()
 
         for _, channel in self.channels.items():
@@ -244,10 +232,15 @@ class Plotter(PyQt6.QtCore.QObject):
                 else:
                     curve = channel.curves[-1]
 
+                if not channel.enabled:
+                    for c in channel.curves:
+                        c.hide()
+
                 if channel.buffer_idx == 0:
                     self.add_constant_data(now, curve, channel)
                 else:
                     self.add_new_data(curve, channel)
+
 
 def get_source_type(s):
     return s.opts['name'].split()[0]

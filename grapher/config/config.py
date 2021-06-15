@@ -42,9 +42,6 @@ class ConfigurationHandler(PyQt6.QtCore.QObject):
         with open(self.dat_file, 'wb') as fid:
             pickle.dump(self.parameters.saveState(), fid)
 
-        with open(self.channels_file, 'w') as fid:
-            json.dump(self.channels, fid)
-
     def load_channels(self):
         with open(self.channels_file, 'r') as fid:
             self.channels = json.load(fid)
