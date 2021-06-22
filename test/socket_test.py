@@ -21,7 +21,6 @@ async def tcp_test_client():
         data.source_id = int(sys.argv[1])
         data.data = math.tan((i - float(sys.argv[2])) / float(sys.argv[3])) + float(sys.argv[4])
         data.timestamp = round(pg.ptime.time() * 1000)
-        print(data.timestamp)
 
         writer.write(struct.pack('ilf', data.source_id, data.timestamp, data.data))
         await writer.drain()

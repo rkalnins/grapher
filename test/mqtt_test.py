@@ -39,8 +39,6 @@ def mqtt_test():
 
         if res[0] != 0:
             print('failed to send')
-        else:
-            print('sent ', packed)
 
         i += 1
         time.sleep(0.01)

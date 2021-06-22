@@ -24,8 +24,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Grapher')
         self.app = app
 
-        self.dock_plot = Dock("Plot", size=(500, 200))
-        self.dock_cfg = Dock("Config", size=(500, 200))
+        self.dock_plot = Dock("Plot", size=(750, 500))
+        self.dock_cfg = Dock("Config", size=(250, 500))
 
         area.addDock(self.dock_plot, 'left')
         area.addDock(self.dock_cfg, 'right', self.dock_plot)
