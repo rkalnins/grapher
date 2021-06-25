@@ -14,10 +14,3 @@ def get_logger(name, level):
     logger.addHandler(console_handler)
 
     return logger
-
-
-
-
-
-
-

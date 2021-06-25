@@ -1,8 +1,8 @@
 import logging
 import selectors
 import socket
-import types
 import struct
+import types
 
 import PyQt6.QtCore
 
