@@ -51,12 +51,12 @@ class App:
 if __name__ == '__main__':
     logger.info('Starting grapher app')
 
-    app = App()
-    win = MainWindow(app)
+    grapher_app = App()
+    win = MainWindow(grapher_app)
 
     win.show()
     logger.info('Executing...')
     pg.exec()
     logger.debug('Done...')
 
-    app.plotter.close()
+    grapher_app.plotter.close()

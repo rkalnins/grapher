@@ -31,6 +31,21 @@ class Channel:
         self.enabled = enabled
 
 
+def add_new_data(curve, channel: Channel):
+    # set data with accumulated new data
+    start = channel.chunk_idx + 1
+    end = start + channel.buffer_idx
+
+    channel.data[start:end] = channel.buffer[:channel.buffer_idx]
+
+    curve.setData(x=channel.data[:end, 0], y=channel.data[:end, 1])
+
+    # reset buffer and counter
+    channel.ptr += channel.buffer_idx
+    channel.buffer = np.zeros((BUFFER_SIZE + 1, 2))
+    channel.buffer_idx = 0
+
+
 class Plotter(QWidget):
 
     def __init__(self, plot_cfg, channels_cfg):
@@ -57,10 +72,26 @@ class Plotter(QWidget):
 
         self.timer = pg.QtCore.QTimer(self)
 
+        self.plot_cfg = plot_cfg
+        self.plot_cfg.param('Plot configuration').sigTreeStateChanged.connect(self.rescale)
+
+    def rescale(self, param, changes):
+
+        for p, c, d in changes:
+            dimension = self.plot_cfg.childPath(p)[-1]
+
+            if dimension == 'xmin':
+                self.plot.setXRange(d, self.plot_cfg.param('Plot configuration', 'xmax').value())
+            elif dimension == 'xmax':
+                self.plot.setXRange(self.plot_cfg.param('Plot configuration', 'xmin').value(), d)
+            elif dimension == 'ymin':
+                self.plot.setYRange(d, self.plot_cfg.param('Plot configuration', 'ymax').value())
+            elif dimension == 'ymax':
+                self.plot.setYRange(self.plot_cfg.param('Plot configuration', 'xmin').value(), d)
+
     def toggle_pause(self):
         logger.debug('Toggling pause')
         self.running = not self.running
-
 
     def populate_channels(self, channels_cfg: dict):
         if 'MQTT' in channels_cfg:
@@ -189,20 +220,6 @@ class Plotter(QWidget):
 
         return curve
 
-    def add_new_data(self, curve, channel: Channel):
-        # set data with accumulated new data
-        start = channel.chunk_idx + 1
-        end = start + channel.buffer_idx
-
-        channel.data[start:end] = channel.buffer[:channel.buffer_idx]
-
-        curve.setData(x=channel.data[:end, 0], y=channel.data[:end, 1])
-
-        # reset buffer and counter
-        channel.ptr += channel.buffer_idx
-        channel.buffer = np.zeros((BUFFER_SIZE + 1, 2))
-        channel.buffer_idx = 0
-
     def add_constant_data(self, now, curve: pg.plot, channel: Channel):
         channel.data[channel.chunk_idx + 1, 0] = now - self.start_time
         channel.data[channel.chunk_idx + 1, 1] = channel.data[channel.chunk_idx, 1]
@@ -239,7 +256,7 @@ class Plotter(QWidget):
                 if channel.buffer_idx == 0:
                     self.add_constant_data(now, curve, channel)
                 else:
-                    self.add_new_data(curve, channel)
+                    add_new_data(curve, channel)
 
 
 def get_source_type(s):
