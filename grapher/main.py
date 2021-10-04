@@ -6,9 +6,9 @@ import pyqtgraph as pg
 from PyQt6.QtWidgets import QMainWindow
 from pyqtgraph.dockarea import *
 
-import grapher.util.grapher_logging as gl
-from grapher.Plotter import Plotter
-from grapher.config.config import ConfigurationHandler
+import util.grapher_logging as gl
+from Plotter import Plotter
+from config.config import ConfigurationHandler
 
 logger = gl.get_logger(__name__, logging.DEBUG)
 

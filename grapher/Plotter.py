@@ -7,8 +7,8 @@ import pyqtgraph as pg
 from PyQt6.QtCore import QThread
 from PyQt6.QtWidgets import QWidget
 
-import grapher.util.grapher_logging as gl
-from grapher.sinks.DataProvider import DataPacket
+import util.grapher_logging as gl
+from sinks.DataProvider import DataPacket
 from sinks.mqtt import MqttSink
 from sinks.tcp import TCPSink
 

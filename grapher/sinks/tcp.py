@@ -6,8 +6,8 @@ import types
 
 import PyQt6.QtCore
 
-import grapher.util.grapher_logging as gl
-from grapher.sinks.DataProvider import DataProvider, DataPacket
+import util.grapher_logging as gl
+from sinks.DataProvider import DataProvider, DataPacket
 
 logger = gl.get_logger(__name__, logging.DEBUG)
 
