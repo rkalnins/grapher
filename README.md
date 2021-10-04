@@ -1,9 +1,9 @@
 # Grapher
 
 ## Sources
+
 - MQTT
 - TCP
-- Serial
 
 ## Channels
 
@@ -35,6 +35,6 @@ Each source has a list of channels. Channels are graphable.
             - id
             - enabled
             - color
-    
+
 1. Load file with configuration
 2. Reset
