@@ -25,7 +25,7 @@ class TCPSink(DataProvider):
 
     def close(self):
         self.running = False
-        logger.info('Closed TCP sink')
+        logger.info("Closed TCP sink")
 
     def accept_wrapper(self, sock):
         conn, addr = sock.accept()  # Should be ready to read
@@ -44,7 +44,7 @@ class TCPSink(DataProvider):
                 # logger.debug(recv_data)
 
                 try:
-                    msg = struct.unpack('ilf', recv_data)
+                    msg = struct.unpack("ilf", recv_data)
                 except struct.error:
                     return
 

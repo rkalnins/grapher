@@ -16,8 +16,8 @@ class MqttSink(DataProvider):
     def __init__(self):
         super().__init__()
 
-        self.name = 'grapher'
-        self.host = ''
+        self.name = "grapher"
+        self.host = ""
         self.port = 0
         self.client = mqtt.Client(self.name)
         self.client.on_connect = self.on_connect
@@ -50,10 +50,10 @@ class MqttSink(DataProvider):
 
     def close(self):
         self.on_disconnect()
-        logger.info('Closed MQTT sink')
+        logger.info("Closed MQTT sink")
 
     def on_data(self, mosq, userdata, msg: mqtt.MQTTMessage):
-        unpacked_msg = struct.unpack('ilf', msg.payload)
+        unpacked_msg = struct.unpack("ilf", msg.payload)
         packet = DataPacket()
         packet.source_id = unpacked_msg[0]
         packet.timestamp = unpacked_msg[1] / 1000.0
@@ -63,4 +63,4 @@ class MqttSink(DataProvider):
 
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
-            logger.debug('Connected to MQTT broker at %s', self.host)
+            logger.debug("Connected to MQTT broker at %s", self.host)

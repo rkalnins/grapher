@@ -21,23 +21,23 @@ class MainWindow(QMainWindow):
         area = DockArea()
         self.setCentralWidget(area)
         self.resize(1000, 500)
-        self.setWindowTitle('Grapher')
+        self.setWindowTitle("Grapher")
         self.app = app
 
         self.dock_plot = Dock("Plot", size=(750, 500))
         self.dock_cfg = Dock("Config", size=(250, 500))
 
-        area.addDock(self.dock_plot, 'left')
-        area.addDock(self.dock_cfg, 'right', self.dock_plot)
+        area.addDock(self.dock_plot, "left")
+        area.addDock(self.dock_cfg, "right", self.dock_plot)
 
         self.dock_plot.addWidget(app.plotter.plot)
         self.dock_cfg.addWidget(app.cfg.tree)
 
     def keyPressEvent(self, event: PyQt6.QtGui.QKeyEvent):
         super(MainWindow, self).keyPressEvent(event)
-        logger.debug('key pressed')
+        logger.debug("key pressed")
         if event.key() == PyQt6.QtCore.Qt.Key.Key_Space:
-            app.plotter.toggle_pause()
+            self.app.plotter.toggle_pause()
 
 
 class App:
@@ -48,15 +48,15 @@ class App:
         self.plotter.start()
 
 
-if __name__ == '__main__':
-    logger.info('Starting grapher app')
+if __name__ == "__main__":
+    logger.info("Starting grapher app")
 
     grapher_app = App()
     win = MainWindow(grapher_app)
 
     win.show()
-    logger.info('Executing...')
+    logger.info("Executing...")
     pg.exec()
-    logger.debug('Done...')
+    logger.debug("Done...")
 
     grapher_app.plotter.close()

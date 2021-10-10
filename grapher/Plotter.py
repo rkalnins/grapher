@@ -36,7 +36,7 @@ def add_new_data(curve, channel: Channel):
     start = channel.chunk_idx + 1
     end = start + channel.buffer_idx
 
-    channel.data[start:end] = channel.buffer[:channel.buffer_idx]
+    channel.data[start:end] = channel.buffer[: channel.buffer_idx]
 
     curve.setData(x=channel.data[:end, 0], y=channel.data[:end, 1])
 
@@ -47,7 +47,6 @@ def add_new_data(curve, channel: Channel):
 
 
 class Plotter(QWidget):
-
     def __init__(self, plot_cfg, channels_cfg):
         super().__init__()
         self.plot = pg.PlotWidget(title="Plot")
@@ -73,37 +72,47 @@ class Plotter(QWidget):
         self.timer = pg.QtCore.QTimer(self)
 
         self.plot_cfg = plot_cfg
-        self.plot_cfg.param('Plot configuration').sigTreeStateChanged.connect(self.rescale)
+        self.plot_cfg.param("Plot configuration").sigTreeStateChanged.connect(
+            self.rescale
+        )
 
     def rescale(self, param, changes):
 
         for p, c, d in changes:
             dimension = self.plot_cfg.childPath(p)[-1]
 
-            if dimension == 'xmin':
-                self.plot.setXRange(d, self.plot_cfg.param('Plot configuration', 'xmax').value())
-            elif dimension == 'xmax':
-                self.plot.setXRange(self.plot_cfg.param('Plot configuration', 'xmin').value(), d)
-            elif dimension == 'ymin':
-                self.plot.setYRange(d, self.plot_cfg.param('Plot configuration', 'ymax').value())
-            elif dimension == 'ymax':
-                self.plot.setYRange(self.plot_cfg.param('Plot configuration', 'xmin').value(), d)
+            if dimension == "xmin":
+                self.plot.setXRange(
+                    d, self.plot_cfg.param("Plot configuration", "xmax").value()
+                )
+            elif dimension == "xmax":
+                self.plot.setXRange(
+                    self.plot_cfg.param("Plot configuration", "xmin").value(), d
+                )
+            elif dimension == "ymin":
+                self.plot.setYRange(
+                    d, self.plot_cfg.param("Plot configuration", "ymax").value()
+                )
+            elif dimension == "ymax":
+                self.plot.setYRange(
+                    self.plot_cfg.param("Plot configuration", "xmin").value(), d
+                )
 
     def toggle_pause(self):
-        logger.debug('Toggling pause')
+        logger.debug("Toggling pause")
         self.running = not self.running
 
     def populate_channels(self, channels_cfg: dict):
-        if 'MQTT' in channels_cfg:
-            if channels_cfg['MQTT']['enabled']:
-                self.add_mqtt_source(channels_cfg['MQTT'])
+        if "MQTT" in channels_cfg:
+            if channels_cfg["MQTT"]["enabled"]:
+                self.add_mqtt_source(channels_cfg["MQTT"])
 
-        if 'TCP' in channels_cfg:
-            if channels_cfg['TCP']['enabled']:
-                self.add_tcp_source(channels_cfg['TCP'])
+        if "TCP" in channels_cfg:
+            if channels_cfg["TCP"]["enabled"]:
+                self.add_tcp_source(channels_cfg["TCP"])
 
     def add_mqtt_source(self, s: dict):
-        logger.debug('Adding MQTT source')
+        logger.debug("Adding MQTT source")
         # support only one MQTT source right now
         if not self.mqtt_enabled:
             self.mqtt_enabled = True
@@ -114,40 +123,40 @@ class Plotter(QWidget):
 
     def update_mqtt_host(self, s: dict):
 
-        hostname = s['host']
-        port = s['port']
+        hostname = s["host"]
+        port = s["port"]
 
         if hostname != self.mqtt_sink.host or port != self.mqtt_sink.port:
             self.mqtt_sink.update_host(hostname, port)
 
     def update_mqtt_topics(self, s: dict):
-        topics = self.update_channels_for_source(s['channels'])
+        topics = self.update_channels_for_source(s["channels"])
         self.mqtt_sink.update_topics(topics)
-        logger.info('Updated MQTT topics')
+        logger.info("Updated MQTT topics")
 
     def update_channels_for_source(self, channels: list):
         topics = []
 
         for c in channels:
-            logger.debug('Adding channel %d', c['id'])
-            self.channels[c['id']] = Channel(c['color'], c['enabled'])
-            self.channels[c['id']].init = True
-            self.create_new_curve(self.channels[c['id']])
+            logger.debug("Adding channel %d", c["id"])
+            self.channels[c["id"]] = Channel(c["color"], c["enabled"])
+            self.channels[c["id"]].init = True
+            self.create_new_curve(self.channels[c["id"]])
 
-            if 'topic' in c:
-                topics.append(c['topic'])
+            if "topic" in c:
+                topics.append(c["topic"])
 
         return topics
 
     def add_tcp_source(self, s: dict):
-        logger.debug('Adding TCP source')
+        logger.debug("Adding TCP source")
 
         # support only one TCP source right now
         if not self.tcp_enabled:
             self.tcp_enabled = True
 
-            self.update_channels_for_source(s['channels'])
-            self.tcp_sink = TCPSink(s['host'], s['port'], self.post_data)
+            self.update_channels_for_source(s["channels"])
+            self.tcp_sink = TCPSink(s["host"], s["port"], self.post_data)
 
     def init_io(self):
         if self.tcp_enabled:
@@ -155,16 +164,16 @@ class Plotter(QWidget):
             self.tcp_thread = QThread()
             self.tcp_sink.moveToThread(self.tcp_thread)
             self.tcp_thread.started.connect(self.tcp_sink.run)
-            logger.info('TCP connected and ready to run')
+            logger.info("TCP connected and ready to run")
 
         if self.mqtt_enabled:
             self.mqtt_sink.connect_client()
-            logger.info('MQTT connected')
+            logger.info("MQTT connected")
 
     def start(self):
-        logger.info('Starting logger')
+        logger.info("Starting logger")
 
-        self.plot.setLabel('bottom', 'Time', 's')
+        self.plot.setLabel("bottom", "Time", "s")
         self.plot.setRange(xRange=[-10, 0], yRange=[-2, 40])
 
         self.timer.timeout.connect(self.update)
@@ -173,15 +182,15 @@ class Plotter(QWidget):
         if self.tcp_enabled:
             self.tcp_sink.post_signal.connect(self.post_data)
             self.tcp_thread.start()
-            logger.info('TCP started')
+            logger.info("TCP started")
 
         if self.mqtt_enabled:
             self.mqtt_sink.post_signal.connect(self.post_data)
             self.mqtt_sink.start()
-            logger.info('MQTT started')
+            logger.info("MQTT started")
 
         self.start_time = pg.ptime.time()
-        logger.debug('Start time: %s', self.start_time)
+        logger.debug("Start time: %s", self.start_time)
 
     def close(self):
         if self.tcp_enabled:
@@ -224,8 +233,10 @@ class Plotter(QWidget):
         channel.data[channel.chunk_idx + 1, 0] = now - self.start_time
         channel.data[channel.chunk_idx + 1, 1] = channel.data[channel.chunk_idx, 1]
 
-        curve.setData(x=channel.data[:channel.chunk_idx + 1, 0],
-                      y=channel.data[:channel.chunk_idx + 1, 1])
+        curve.setData(
+            x=channel.data[: channel.chunk_idx + 1, 0],
+            y=channel.data[: channel.chunk_idx + 1, 1],
+        )
 
         channel.ptr += 1
 
@@ -260,4 +271,4 @@ class Plotter(QWidget):
 
 
 def get_source_type(s):
-    return s.opts['name'].split()[0]
+    return s.opts["name"].split()[0]
