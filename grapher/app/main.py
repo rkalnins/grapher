@@ -2,17 +2,14 @@ import logging
 
 import PyQt6
 import PyQt6.QtCore
-import pyqtgraph as pg
 from PyQt6.QtWidgets import QMainWindow
 from pyqtgraph.dockarea import *
 
-import util.grapher_logging as gl
-from Plotter import Plotter
-from config.config import ConfigurationHandler
+from grapher.util import get_logger
+from grapher import Plotter
+from grapher.config import ConfigurationHandler
 
-logger = gl.get_logger(__name__, logging.DEBUG)
-
-qapp = pg.mkQApp("Grapher")
+logger = get_logger(__name__, logging.DEBUG)
 
 
 class MainWindow(QMainWindow):
@@ -46,17 +43,3 @@ class App:
         self.plotter = Plotter(self.cfg.parameters, self.cfg.channels)
         self.plotter.init_io()
         self.plotter.start()
-
-
-if __name__ == "__main__":
-    logger.info("Starting grapher app")
-
-    grapher_app = App()
-    win = MainWindow(grapher_app)
-
-    win.show()
-    logger.info("Executing...")
-    pg.exec()
-    logger.debug("Done...")
-
-    grapher_app.plotter.close()

@@ -6,10 +6,10 @@ import types
 
 import PyQt6.QtCore
 
-import util.grapher_logging as gl
-from sinks.DataProvider import DataProvider, DataPacket
+from grapher.util import get_logger
+from grapher.sinks import DataProvider, DataPacket
 
-logger = gl.get_logger(__name__, logging.DEBUG)
+logger = get_logger(__name__, logging.DEBUG)
 
 
 class TCPSink(DataProvider):

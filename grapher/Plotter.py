@@ -7,12 +7,12 @@ import pyqtgraph as pg
 from PyQt6.QtCore import QThread
 from PyQt6.QtWidgets import QWidget
 
-import util.grapher_logging as gl
-from sinks.DataProvider import DataPacket
-from sinks.mqtt import MqttSink
-from sinks.tcp import TCPSink
+from grapher.util import get_logger
+from grapher.sinks import DataPacket
+from grapher.sinks import MqttSink
+from grapher.sinks import TCPSink
 
-logger = gl.get_logger(__name__, logging.DEBUG)
+logger = get_logger(__name__, logging.DEBUG)
 
 CHUNK_SIZE = 300
 BUFFER_SIZE = 100
